@@ -1,0 +1,40 @@
+# ── Security: never commit real secrets ──────────────────────────────────────
+# These patterns guarantee that backend/.env (and any .env file containing
+# real credentials) is NEVER pushed to a public repository.
+.env
+.env.local
+.env.*.local
+.env.production
+.env.staging
+.env.test
+
+# Backend-specific env files (belt-and-suspenders — root .env already covers them)
+backend/.env
+backend/.env.local
+backend/.env.*.local
+
+# Frontend env files
+frontend/.env*
+frontend/dist
+
+# ── Dependencies ──────────────────────────────────────────────────────────────
+node_modules
+frontend/node_modules
+backend/node_modules
+
+# ── Build artefacts ──────────────────────────────────────────────────────────
+dist
+build
+
+# ── Patch / probe / test helper scripts (not part of the shipped app) ─────────
+backend/__ai_test.mjs
+backend/__probe.mjs
+apply_fixes.js
+apply_frontend.js
+_divcheck.js
+
+# ── OS / editor artefacts ───────────────────────────────────────────────────
+.DS_Store
+Thumbs.db
+*.log
+cursor/**

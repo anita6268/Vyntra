@@ -1,0 +1,12 @@
+# ── Defense-in-depth: even if the root .gitignore is missing, these ensure
+#    backend/.env is never committed. ─────────────────────────────────────────────────
+.env
+.env.local
+.env.*.local
+.env.production
+.env.staging
+.env.test
+
+# Build output
+dist
+node_modules

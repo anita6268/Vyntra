@@ -15,7 +15,12 @@ export const generateToken = (userId, res) => {
   res.cookie("jwt", token, {
     maxAge: 7 * 24 * 60 * 60 * 1000, // MS
     httpOnly: true, // prevent XSS attacks: cross-site scripting
-    sameSite: "strict", // CSRF attacks
+    // The Vercel frontend and the Render backend are different sites, so the
+    // auth cookie is cross-site. SameSite=Strict/Lax cookies are withheld by
+    // browsers on cross-site XHR, which would log everyone out immediately.
+    // SameSite=None (requires Secure=true, already set in production) allows
+    // the cookie to travel with credentialed cross-origin API calls.
+    sameSite: ENV.NODE_ENV === "production" ? "none" : "strict",
     secure: ENV.NODE_ENV === "development" ? false : true,
   });
 

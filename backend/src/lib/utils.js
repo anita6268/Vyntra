@@ -21,6 +21,10 @@ export const generateToken = (userId, res) => {
     // SameSite=None (requires Secure=true, already set in production) allows
     // the cookie to travel with credentialed cross-origin API calls.
     sameSite: ENV.NODE_ENV === "production" ? "none" : "strict",
+    // CHIPS: browsers that block third-party cookies still accept a
+    // Partitioned cookie (stored per top-level site). Requires Secure=true,
+    // so it is only set in production (dev is same-site and stays strict).
+    partitioned: ENV.NODE_ENV === "production",
     secure: ENV.NODE_ENV === "development" ? false : true,
   });
 

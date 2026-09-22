@@ -1,6 +1,7 @@
 import express from "express";
 import cookieParser from "cookie-parser";
 import path from "path";
+import { existsSync } from "fs";
 import cors from "cors";
 
 import authRoutes from "./routes/auth.route.js";
@@ -57,12 +58,21 @@ app.use("/api/calls", callRoutes);
 app.use("/api/wallpapers", wallpaperRoutes);
 
 // make ready for deployment
+// The frontend is deployed separately on Vercel, so this backend does NOT
+// require frontend/dist to exist. Serve the SPA only when a build is actually
+// present (e.g. single-service deployments); on Render (API-only) the block is
+// skipped and unknown non-/api paths fall through to the JSON error handler
+// instead of throwing ENOENT for frontend/dist/index.html.
 if (ENV.NODE_ENV === "production") {
-  app.use(express.static(path.join(__dirname, "../frontend/dist")));
+  const frontendDist = path.join(__dirname, "../frontend/dist");
 
-  app.get("*", (_, res) => {
-    res.sendFile(path.join(__dirname, "../frontend", "dist", "index.html"));
-  });
+  if (existsSync(path.join(frontendDist, "index.html"))) {
+    app.use(express.static(frontendDist));
+
+    app.get("*", (_, res) => {
+      res.sendFile(path.join(frontendDist, "index.html"));
+    });
+  }
 }
 
 // ── Global error handler ───────────────────────────────────────────────────────

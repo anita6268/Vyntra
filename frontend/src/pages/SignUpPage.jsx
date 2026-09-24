@@ -2,11 +2,12 @@ import { motion } from "framer-motion";
 import { useState } from "react";
 import { useAuthStore } from "../store/useAuthStore";
 import BorderAnimatedContainer from "../components/BorderAnimatedContainer";
-import { MessageCircleIcon, LockIcon, MailIcon, UserIcon, PhoneIcon, LoaderIcon, SparklesIcon } from "lucide-react";
+import { MessageCircleIcon, LockIcon, MailIcon, UserIcon, PhoneIcon, LoaderIcon, SparklesIcon, EyeIcon, EyeOffIcon } from "lucide-react";
 import { Link } from "react-router";
 
 function SignUpPage() {
   const [formData, setFormData] = useState({ fullName: "", email: "", password: "", phone: "" });
+  const [showPassword, setShowPassword] = useState(false);
   const { signup, isSigningUp } = useAuthStore();
 
   const handleSubmit = (e) => {
@@ -58,7 +59,15 @@ function SignUpPage() {
                     <label className="auth-input-label">Password</label>
                     <div className="relative">
                       <LockIcon className="auth-input-icon" />
-                      <input type="password" value={formData.password} onChange={(e) => setFormData({ ...formData, password: e.target.value })} className="input pl-10" placeholder="Enter your password" />
+                      <input type={showPassword ? "text" : "password"} value={formData.password} onChange={(e) => setFormData({ ...formData, password: e.target.value })} className="input pl-10 pr-10" placeholder="Enter your password" />
+                      <button
+                        type="button"
+                        aria-label={showPassword ? "Hide password" : "Show password"}
+                        onClick={() => setShowPassword(!showPassword)}
+                        className="auth-password-toggle"
+                      >
+                        {showPassword ? <EyeOffIcon className="size-4" /> : <EyeIcon className="size-4" />}
+                      </button>
                     </div>
                   </div>
 

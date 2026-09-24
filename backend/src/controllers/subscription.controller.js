@@ -1,7 +1,6 @@
 import User from "../models/User.js";
 import { getReceiverSocketId, io } from "../lib/socket.js";
 import { paymentGatewayStatus, completeCheckoutWithGateway } from "../lib/payments.js";
-import { ENV } from "../lib/env.js";
 
 // How long a paid period lasts for a given billing cycle (ms).
 const PERIOD_MS = { monthly: 30 * 24 * 60 * 60 * 1000, yearly: 365 * 24 * 60 * 60 * 1000 };
@@ -101,16 +100,16 @@ export const confirmSubscription = async (req, res) => {
         ? bodyProvider
         : paymentGatewayStatus.provider || "";
 
-    // Demo / no-payment mode (PAYMENT_PROVIDER=none): no real provider
-    // subscription exists. If none was supplied, synthesize a demo id - this
-    // only identifies the local demo record, it is NOT a real provider charge.
+    // No-payment mode (PAYMENT_PROVIDER=none): no real provider subscription
+    // exists. If none was supplied, synthesize an internal id - this only
+    // identifies the local record, it is NOT a real provider charge.
     let providerSubscriptionId = String(req.body?.subscriptionId || "");
     if (paymentGatewayStatus.demo && !providerSubscriptionId) {
       providerSubscriptionId = `demo-sub-${Date.now()}`;
     }
 
     // Real providers require a connected gateway AND a provider subscription id.
-    // Demo mode bypasses both - the confirm step alone activates Pro.
+    // No-payment mode bypasses both - the confirm step alone activates Pro.
     if (!paymentGatewayStatus.configured && !paymentGatewayStatus.demo) {
       return res.status(503).json({
         status: "payment_gateway_not_configured",
@@ -120,14 +119,6 @@ export const confirmSubscription = async (req, res) => {
     }
     if (!paymentGatewayStatus.demo && !providerSubscriptionId) {
       return res.status(400).json({ message: "subscriptionId is required to confirm checkout." });
-    }
-
-    // Production guard: never allow demo-mode Pro activation in production.
-    if (paymentGatewayStatus.demo && ENV.NODE_ENV === "production") {
-      return res.status(403).json({
-        status: "demo_mode_not_allowed_in_production",
-        message: "Demo subscription activation is disabled in production.",
-      });
     }
 
     const user = await User.findById(req.user._id);
@@ -141,9 +132,9 @@ export const confirmSubscription = async (req, res) => {
     user.isPro = true;
     user.billingCycle = billingCycle;
     user.subscriptionStatus = "active";
-    user.subscriptionProvider = provider; // "none" in demo mode
-    user.subscriptionId = providerSubscriptionId; // demo-<id> in demo mode
-    // Demo subscriptions never lapse and never auto-renew (nobody to bill);
+    user.subscriptionProvider = provider; // "none" in no-payment mode
+    user.subscriptionId = providerSubscriptionId; // demo-<id> in no-payment mode
+    // No-payment subscriptions never lapse and never auto-renew;
     // real subscriptions get a real period end + auto-renew.
     user.currentPeriodEnd = paymentGatewayStatus.demo ? null : new Date(Date.now() + PERIOD_MS[billingCycle]);
     user.autoRenew = !paymentGatewayStatus.demo;
@@ -153,6 +144,40 @@ export const confirmSubscription = async (req, res) => {
     res.status(200).json({ status: "active", user: serializeUser(user) });
   } catch (error) {
     console.error("Error in confirmSubscription controller:", error.message);
+    res.status(500).json({ message: "Internal server error" });
+  }
+};
+
+// POST /api/subscriptions/activate
+// Direct Pro activation — no payment provider, no checkout, no verification.
+// Any authenticated user can activate Vyntra Pro instantly. This reuses the
+// exact same subscription fields/persistence as the payment-based flow so
+// Cancel Subscription continues to work unchanged.
+export const activatePro = async (req, res) => {
+  try {
+    const billingCycle = req.body?.billingCycle === "yearly" ? "yearly" : "monthly";
+
+    const user = await User.findById(req.user._id);
+    if (!user) return res.status(404).json({ message: "User not found." });
+
+    if (isPeriodActive(user)) {
+      return res.status(200).json({ status: "active", user: serializeUser(user) });
+    }
+
+    user.plan = "pro";
+    user.isPro = true;
+    user.billingCycle = billingCycle;
+    user.subscriptionStatus = "active";
+    user.subscriptionProvider = "none";
+    user.subscriptionId = `pro-${Date.now()}`;
+    user.currentPeriodEnd = null; // Never lapse — direct activation
+    user.autoRenew = false;
+    await user.save();
+
+    broadcastUser(user);
+    res.status(200).json({ status: "active", user: serializeUser(user) });
+  } catch (error) {
+    console.error("Error in activatePro controller:", error.message);
     res.status(500).json({ message: "Internal server error" });
   }
 };

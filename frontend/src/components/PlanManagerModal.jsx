@@ -1,27 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { createPortal } from "react-dom";
-import {
-  XIcon,
-  CrownIcon,
-  SparklesIcon,
-  CheckIcon,
-  HardDriveIcon,
-  PaletteIcon,
-  ServerIcon,
-  AlertTriangleIcon,
-  CalendarIcon,
-  RefreshCwIcon,
-  ChevronRightIcon,
-  VideoIcon,
-  ScanTextIcon,
-  LanguagesIcon,
-  Wand2Icon,
-  CalendarDaysIcon,
-  ZapIcon,
-  BarChart3Icon,
-  LayoutGridIcon,
-} from "lucide-react";
+import { XIcon, CheckIcon, CrownIcon, SparklesIcon, HardDriveIcon, PaletteIcon, CalendarIcon, RefreshCwIcon, ChevronRightIcon, VideoIcon, ScanTextIcon, LanguagesIcon, Wand2Icon, CalendarDaysIcon, ZapIcon, BarChart3Icon, LayoutGridIcon } from "lucide-react";
 import { toast } from "react-hot-toast";
 import usePremiumStore from "../store/usePremiumStore";
 import { useAuthStore } from "../store/useAuthStore";
@@ -60,10 +40,7 @@ export default function PlanManagerModal({
   onOpenWidgets,
 }) {
   const { billingCycle, currentPeriodEnd, checkingOut, setCheckingOut } = usePremiumStore();
-  const demoMode = usePremiumStore((s) => s.demoMode);
-  const gatewayStatus = usePremiumStore((s) => s.gatewayStatus);
-  const createCheckout = useAuthStore((state) => state.createCheckout);
-  const confirmSubscription = useAuthStore((state) => state.confirmSubscription);
+  const activatePro = useAuthStore((s) => s.activatePro);
   const cancelSubscription = useAuthStore((state) => state.cancelSubscription);
 
   const [confirmCancel, setConfirmCancel] = useState(false);
@@ -89,8 +66,6 @@ export default function PlanManagerModal({
   }, [isOpen, onClose, confirmCancel]);
 
   const isPro = usePremiumStore((s) => s.isPro);
-  const isDemo = demoMode || gatewayStatus?.demo || !gatewayStatus?.configured;
-  const isGatewayConfigured = gatewayStatus?.configured;
 
   const featureActionMap = {
     [PREMIUM_FEATURES.AI_SUMMARIZE]: onOpenSummary,
@@ -130,50 +105,26 @@ export default function PlanManagerModal({
 
   const expiryLabel = useMemo(() => {
     if (!isPro) return null;
-    if (isDemo) return "Demo subscription — no expiry";
     const formatted = formatDate(currentPeriodEnd);
     if (!formatted) return "Active";
     const end = new Date(currentPeriodEnd).getTime();
     const now = Date.now();
     if (end < now) return "Expired";
     return `Renews ${formatted}`;
-  }, [isPro, isDemo, currentPeriodEnd]);
+  }, [isPro, currentPeriodEnd]);
 
-  const handleUpgrade = async () => {
+    const handleUpgrade = async () => {
     setCheckingOut(true);
     try {
-      const res = await createCheckout("monthly");
-
+      const res = await activatePro("monthly");
       if (res?.error) {
-        if (res.status === 400 && /already have an active/i.test(res.message || "")) {
-          toast("Vyntra Pro is already active.");
-          return;
-        }
-        toast.error(res?.message || "Couldn't start checkout.");
-        return;
+        toast.error(res?.message || "Couldn't activate Vyntra Pro.");
+      } else {
+        toast.success("Vyntra Pro activated!");
+        onClose?.();
       }
-
-      if (res?.demo) {
-        const confirmed = await confirmSubscription({ provider: "none", subscriptionId: res.checkoutId, billingCycle: res.billingCycle });
-        if (confirmed?.error) {
-          toast.error(confirmed?.message || "Couldn't activate Vyntra Pro.");
-        } else {
-          toast.success("Vyntra Pro activated — welcome! (demo)");
-          onClose?.();
-        }
-        return;
-      }
-      if (res?.redirectUrl) {
-        window.location.assign(res.redirectUrl);
-        return;
-      }
-      if (res?.status === "checkout_started") {
-        toast("Checkout started — complete your payment with the provider.", { icon: "🔐" });
-        return;
-      }
-      toast.error(res?.message || "Checkout is unavailable.");
     } catch {
-      toast.error("Couldn't start checkout. Please try again.");
+      toast.error("Couldn't activate Vyntra Pro. Please try again.");
     } finally {
       setCheckingOut(false);
     }
@@ -218,20 +169,15 @@ export default function PlanManagerModal({
             {/* HEADER */}
             <div className="relative shrink-0 border-b border-white/10 px-5 py-4">
               <div className="absolute -top-6 -right-6 size-20 rounded-full bg-gradient-to-br from-[color:var(--accent)]/20 to-[color:var(--accent-3)]/10 blur-2xl" />
-              <div className="flex items-center justify-between">
+                            <div className="flex items-center justify-between">
                 <div>
                   <h3 className="text-base font-semibold text-[color:var(--text-primary)]">Your Plan</h3>
                   <p className="text-xs text-[color:var(--text-muted)]">Manage your Vyntra subscription</p>
                 </div>
                 <div className="flex items-center gap-2">
-                  {isDemo && (
-                    <span className="inline-flex items-center gap-1 rounded-full bg-amber-500/15 px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider text-amber-300">
-                      <ServerIcon className="size-3" /> DEMO MODE
-                    </span>
-                  )}
-                  {!isGatewayConfigured && !isDemo && (
-                    <span className="inline-flex items-center gap-1 rounded-full bg-rose-500/15 px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider text-rose-300">
-                      <AlertTriangleIcon className="size-3" /> No Gateway
+                  {isPro && (
+                    <span className="inline-flex items-center gap-1 rounded-full bg-emerald-500/15 px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider text-emerald-400">
+                      <CheckIcon className="size-3" /> Pro Active
                     </span>
                   )}
                 </div>
@@ -245,25 +191,6 @@ export default function PlanManagerModal({
                 <XIcon className="size-3.5" />
               </button>
             </div>
-
-            {/* STATUS BANNERS */}
-            {!isGatewayConfigured && !isDemo && (
-              <div className="shrink-0 border-b border-rose-500/20 bg-rose-500/5 px-5 py-3">
-                <div className="flex items-center gap-2 text-xs text-rose-300">
-                  <AlertTriangleIcon className="size-4 shrink-0" />
-                  <span>Payment provider not configured. Set <code className="rounded bg-white/10 px-1 py-0.5 text-[color:var(--accent-3)]">PAYMENT_PROVIDER</code> in backend/.env.</span>
-                </div>
-              </div>
-            )}
-
-            {isDemo && !isPro && (
-              <div className="shrink-0 border-b border-amber-500/20 bg-amber-500/5 px-5 py-3">
-                <div className="flex items-center gap-2 text-xs text-amber-300">
-                  <ServerIcon className="size-4 shrink-0" />
-                  <span>Demo Mode — Payments are simulated for testing.</span>
-                </div>
-              </div>
-            )}
 
             {/* PLANS */}
             <div className="shrink-0 overflow-y-auto p-4">
@@ -293,12 +220,6 @@ export default function PlanManagerModal({
                         <span className="inline-flex items-center gap-1 rounded-full bg-white/5 px-2 py-0.5">
                           <RefreshCwIcon className="size-3" />
                           {expiryLabel}
-                        </span>
-                      )}
-                      {isDemo && (
-                        <span className="inline-flex items-center gap-1 rounded-full bg-amber-500/10 px-2 py-0.5 text-amber-300">
-                          <ServerIcon className="size-3" />
-                          Demo — no renewal
                         </span>
                       )}
                     </div>
@@ -427,14 +348,14 @@ export default function PlanManagerModal({
                 ) : (
                   <motion.button
                     type="button"
-                    aria-label={isDemo ? "Activate Pro Demo" : "Start Vyntra Pro checkout"}
+                                        aria-label="Activate Vyntra Pro"
                     disabled={checkingOut}
                     whileHover={checkingOut ? undefined : { scale: 1.02 }}
                     whileTap={checkingOut ? undefined : { scale: 0.97 }}
                     onClick={handleUpgrade}
                     className="order-1 sm:order-2 rounded-xl bg-gradient-to-r from-[color:var(--accent)] to-[color:var(--accent-3)] px-5 py-2.5 text-sm font-bold text-white shadow-lg shadow-[color:var(--glow)]/40 transition-transform hover:scale-[1.02] disabled:cursor-not-allowed disabled:opacity-60"
                   >
-                    {checkingOut ? "Preparing checkout…" : isDemo ? "Activate Pro Demo" : "Get Vyntra Pro"}
+                                        {checkingOut ? "Activating…" : "Activate Pro"}
                   </motion.button>
                 )}
                </div>

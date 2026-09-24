@@ -4,6 +4,7 @@ import {
   confirmSubscription,
   cancelSubscription,
   getSubscription,
+  activatePro,
 } from "../controllers/subscription.controller.js";
 import { protectRoute } from "../middleware/auth.middleware.js";
 import { arcjetProtection } from "../middleware/arcjet.middleware.js";
@@ -18,5 +19,8 @@ router.post("/checkout", createCheckout);   // start a checkout (payment-gateway
 router.post("/confirm", confirmSubscription); // gateway/webhook resolves payment → activates Pro
 router.post("/cancel", cancelSubscription);   // Manage Pro: cancel active subscription
 router.get("/me", getSubscription);           // live verification of subscription state
+// Direct Pro activation — no payment, no gateway, no verification.
+// Any authenticated user can activate Vyntra Pro instantly.
+router.post("/activate", activatePro);
 
 export default router;

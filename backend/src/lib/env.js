@@ -43,6 +43,12 @@ export const ENV = {
   STRIPE_WEBHOOK_SECRET: process.env.STRIPE_WEBHOOK_SECRET || "",
   RAZORPAY_KEY_ID: process.env.RAZORPAY_KEY_ID || "",
   RAZORPAY_KEY_SECRET: process.env.RAZORPAY_KEY_SECRET || "",
+  // -- SAFE DEMO Pro activation allow-list ------------------------------------
+  // Comma-separated demo account emails (used by the CLI script
+  // backend/scripts/grant-demo-pro.mjs and POST /api/subscriptions/demo-activate).
+  // Fail-closed: blank/absent = demo Pro activation is fully disabled and the
+  // endpoint 403s for every account. Normal payment flows are unaffected.
+  DEMO_PRO_EMAILS: process.env.DEMO_PRO_EMAILS || "",
   VYNTRA_PRO_PRICE_MONTHLY: process.env.VYNTRA_PRO_PRICE_MONTHLY || "499",
   VYNTRA_PRO_PRICE_YEARLY: process.env.VYNTRA_PRO_PRICE_YEARLY || "4790",
   // -- Optional TURN relay for WebRTC 1-to-1 calls -------------------------

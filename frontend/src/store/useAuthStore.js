@@ -122,42 +122,24 @@ export const useAuthStore = create((set, get) => ({
       return null;
     }
   },
-
   /**
-   * Start a REAL checkout for Vyntra Pro. This hits the backend subscription
-   * flow and NEVER fakes a payment. If a payment gateway is configured it
-   * returns a redirect/checkout id; otherwise the backend honestly reports the
-   * integration point that still needs wiring.
+   * Direct Pro activation — no payment, no gateway, no verification.
+   * Any authenticated user can activate Vyntra Pro instantly. The backend
+   * persists the updated user so Pro survives refresh, logout/login, and
+   * can be cancelled via cancelSubscription.
    */
-  createCheckout: async (billingCycle) => {
+  activatePro: async (billingCycle) => {
     try {
-      const res = await axiosInstance.post("/subscriptions/checkout", { billingCycle });
-      return res.data;
-    } catch (error) {
-      return {
-        error: true,
-        message: error.response?.data?.message || error.message || "Couldn't start checkout.",
-        status: error.response?.data?.status,
-        integrationPoint: error.response?.data?.integrationPoint,
-        gateway: error.response?.data?.gateway,
-      };
-    }
-  },
-
-  /**
-   * Confirm a completed checkout (the point the payment gateway/webhook calls
-   * after charging). The backend marks the subscription active, then we refresh
-   * the authenticated user so Pro unlocks automatically.
-   */
-  confirmSubscription: async (payload) => {
-    try {
-      const res = await axiosInstance.post("/subscriptions/confirm", payload);
+      const res = await axiosInstance.post("/subscriptions/activate", {
+        billingCycle: billingCycle || "monthly",
+      });
       if (res.data?.user) set({ authUser: res.data.user });
       return res.data;
     } catch (error) {
       return {
         error: true,
-        message: error.response?.data?.message || error.message || "Couldn't confirm subscription.",
+        status: error.response?.status,
+        message: error.response?.data?.message || error.message || "Couldn't activate Vyntra Pro.",
       };
     }
   },

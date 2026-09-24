@@ -13,8 +13,6 @@ import {
   CrownIcon,
   LockIcon,
   Loader2Icon,
-  AlertTriangleIcon,
-  ServerIcon,
   BarChart3Icon,
   LanguagesIcon,
   Wand2Icon,
@@ -48,10 +46,7 @@ export default function UpgradeModal({
   const checkingOut = usePremiumStore((s) => s.checkingOut);
   const setCheckingOut = usePremiumStore((s) => s.setCheckingOut);
   const setBillingCycle = usePremiumStore((s) => s.setBillingCycle);
-  const demoMode = usePremiumStore((s) => s.demoMode);
-  const gatewayStatus = usePremiumStore((s) => s.gatewayStatus);
-  const createCheckout = useAuthStore((s) => s.createCheckout);
-  const confirmSubscription = useAuthStore((s) => s.confirmSubscription);
+  const activatePro = useAuthStore((s) => s.activatePro);
   const [billing, setBilling] = useState("monthly");
   const [step, setStep] = useState("idle"); // idle | loading | success | error
   const [errorMsg, setErrorMsg] = useState("");
@@ -106,57 +101,21 @@ export default function UpgradeModal({
     setErrorMsg("");
     setCheckingOut(true);
     try {
-      const res = await createCheckout(billing);
-
+      const res = await activatePro(billing);
       if (res?.error) {
-        if (res.status === 400 && /already have an active/i.test(res.message || "")) {
-          setStep("active");
-          setErrorMsg("Vyntra Pro is already active.");
-          setCheckingOut(false);
-          return;
-        }
         setStep("error");
-        setErrorMsg(res?.message || "Couldn't start checkout.");
-        setCheckingOut(false);
-        return;
+        setErrorMsg(res?.message || "Couldn't activate Vyntra Pro.");
+      } else {
+        setStep("success");
+        toast.success("Vyntra Pro activated!");
       }
-
-      if (res?.demo) {
-        const confirmed = await confirmSubscription({ provider: "none", subscriptionId: res.checkoutId, billingCycle: res.billingCycle });
-        if (confirmed?.error) {
-          setStep("error");
-          setErrorMsg(confirmed?.message || "Couldn't activate Vyntra Pro.");
-        } else {
-          setStep("success");
-          toast.success("Vyntra Pro activated — welcome! (demo)");
-        }
-        setCheckingOut(false);
-        return;
-      }
-
-      if (res?.redirectUrl) {
-        window.location.assign(res.redirectUrl);
-        return;
-      }
-      if (res?.status === "checkout_started") {
-        toast("Checkout started — complete your payment with the provider.", { icon: "🔐" });
-        setStep("idle");
-        setCheckingOut(false);
-        return;
-      }
-
-      setStep("error");
-      setErrorMsg(res?.message || "Checkout is unavailable.");
-      setCheckingOut(false);
     } catch {
       setStep("error");
-      setErrorMsg("Couldn't start checkout. Please try again.");
+      setErrorMsg("Couldn't activate Vyntra Pro. Please try again.");
+    } finally {
       setCheckingOut(false);
     }
   };
-
-  const isDemo = demoMode || gatewayStatus?.demo || !gatewayStatus?.configured;
-  const isGatewayConfigured = gatewayStatus?.configured;
 
   return createPortal(
     <AnimatePresence>
@@ -196,16 +155,6 @@ export default function UpgradeModal({
                     <CheckIcon className="size-3" /> Pro Active
                   </span>
                 )}
-                {isDemo && !isPro && (
-                  <span className="inline-flex items-center gap-1 rounded-full bg-amber-500/15 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider text-amber-300">
-                    <ServerIcon className="size-3" /> DEMO MODE
-                  </span>
-                )}
-                {!isGatewayConfigured && !isDemo && (
-                  <span className="inline-flex items-center gap-1 rounded-full bg-rose-500/15 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider text-rose-300">
-                    <AlertTriangleIcon className="size-3" /> Gateway Not Configured
-                  </span>
-                )}
               </div>
 
               <button
@@ -220,29 +169,6 @@ export default function UpgradeModal({
 
             {/* BODY (scrolls on short screens) */}
             <div className="min-h-0 flex-1 overflow-y-auto px-5 py-4">
-              {!isGatewayConfigured && !isDemo && (
-                <div className="mb-4 rounded-2xl border border-rose-500/20 bg-rose-500/5 p-4 text-center">
-                  <AlertTriangleIcon className="mx-auto mb-2 size-8 text-rose-400" />
-                  <p className="text-sm font-medium text-[color:var(--text-primary)]">Payment provider not configured</p>
-                  <p className="mt-1 text-xs text-[color:var(--text-muted)]">
-                    Set <code className="rounded bg-white/10 px-1 py-0.5 text-[color:var(--accent-3)]">PAYMENT_PROVIDER</code> in backend/.env to enable checkout.
-                  </p>
-                  <p className="mt-1 text-[10px] text-[color:var(--text-muted)]">
-                    Integration point: {gatewayStatus?.integrationPoint || "backend/src/lib/payments.js"}
-                  </p>
-                </div>
-              )}
-
-              {isDemo && !isPro && (
-                <div className="mb-4 rounded-2xl border border-amber-500/20 bg-amber-500/5 p-4 text-center">
-                  <ServerIcon className="mx-auto mb-2 size-8 text-amber-300" />
-                  <p className="text-sm font-medium text-[color:var(--text-primary)]">DEMO MODE</p>
-                  <p className="mt-1 text-xs text-[color:var(--text-muted)]">
-                    Demo Mode — Payments are simulated for testing. Activating Pro here persists through the backend demo flow.
-                  </p>
-                </div>
-              )}
-
               {/* BILLING-CYCLE TOGGLE */}
               <div className="mb-4 grid grid-cols-2 gap-1.5 rounded-2xl border border-white/10 bg-white/[0.03] p-1.5">
                 {[
@@ -355,14 +281,11 @@ export default function UpgradeModal({
 
               {step === "error" && (
                 <div className="mb-3 rounded-2xl border border-rose-500/20 bg-rose-500/10 p-4 text-center">
-                  <AlertTriangleIcon className="mx-auto mb-2 size-8 text-rose-400" />
+                  <LockIcon className="mx-auto mb-2 size-8 text-rose-400" />
                   <p className="text-sm font-semibold text-rose-300">{errorMsg || "Something went wrong"}</p>
                   <button
                     type="button"
-                    onClick={() => setStep("idle")}
-                    className="mt-2 text-xs font-medium text-[color:var(--accent-3)] transition hover:underline"
                   >
-                    Try again
                   </button>
                 </div>
               )}
@@ -383,18 +306,14 @@ export default function UpgradeModal({
                      </motion.button>
                      <motion.button
                        type="button"
-                       aria-label={isDemo ? "Activate Pro Demo" : "Start Vyntra Pro checkout"}
+                       aria-label="Activate Vyntra Pro"
                        disabled={step === "loading" || step === "error"}
                        whileHover={{ scale: 1.02 }}
                        whileTap={{ scale: 0.97 }}
                        onClick={handleUpgrade}
                        className="order-1 sm:order-2 inline-flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-[color:var(--accent)] to-[color:var(--accent-3)] px-5 py-2.5 text-sm font-bold text-white shadow-lg shadow-[color:var(--glow)]/40 transition-shadow hover:scale-[1.02] disabled:cursor-not-allowed disabled:opacity-60"
                      >
-                       {isDemo ? (
-                         <>Activate Pro Demo <SparklesIcon className="size-4" /></>
-                       ) : (
-                         <>Get Vyntra Pro <SparklesIcon className="size-4" /></>
-                       )}
+                      <>Activate Pro <SparklesIcon className="size-4" /></>
                      </motion.button>
                    </>
                  )}
@@ -426,17 +345,11 @@ export default function UpgradeModal({
                  )}
                </div>
 
-              {!isPro && (
-                <p className="mt-2.5 flex items-center justify-center gap-1 text-center text-[10px] font-semibold uppercase tracking-wider text-[color:var(--text-muted)]">
-                  {isDemo ? (
-                    <>Demo mode — no payment required</>
-                  ) : isGatewayConfigured ? (
-                    <>Backend-driven checkout &bull; secure payment</>
-                  ) : (
-                    <>Connect Stripe/Razorpay to enable checkout</>
-                  )}
-                </p>
-              )}
+                {!isPro && (
+                  <p className="mt-2.5 flex items-center justify-center gap-1 text-center text-[10px] font-semibold uppercase tracking-wider text-[color:var(--text-muted)]">
+                    <>Activate Vyntra Pro</>
+                  </p>
+                )}
             </div>
           </motion.div>
         </motion.div>

@@ -58,8 +58,6 @@ export function getPremiumStatus() {
     billingCycle: state.billingCycle,
     subscriptionStatus: state.subscriptionStatus,
     currentPeriodEnd: state.currentPeriodEnd || null,
-    demoMode: state.demoMode || false,
-    gateway: state.gatewayStatus || null,
   };
 }
 

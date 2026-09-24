@@ -14,17 +14,15 @@ import usePremiumStore from "../store/usePremiumStore";
 function useSubscription() {
   const state = usePremiumStore();
 
-  return useMemo(
+    return useMemo(
     () => ({
       isPro: state.isPro,
       plan: state.plan,
       billingCycle: state.billingCycle,
       subscriptionStatus: state.subscriptionStatus,
       currentPeriodEnd: state.currentPeriodEnd,
-      demoMode: state.demoMode || false,
-      gatewayStatus: state.gatewayStatus || null,
     }),
-    [state.isPro, state.plan, state.billingCycle, state.subscriptionStatus, state.currentPeriodEnd, state.demoMode, state.gatewayStatus]
+    [state.isPro, state.plan, state.billingCycle, state.subscriptionStatus, state.currentPeriodEnd]
   );
 }
 

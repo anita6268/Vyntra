@@ -302,12 +302,26 @@ function ProfilePhotoEditor({
       canvas.toBlob(
         (blob) => {
           if (blob) {
-            onSave(blob);
+            // Convert the Blob to a base64 data URL before passing to onSave.
+            // The backend's uploadProfilePic() expects a data URL string, not a
+            // Blob object. If a Blob is sent directly, axios JSON.stringifys it
+            // to {} and the backend cannot parse it, causing a 500 timeout.
+            const reader = new FileReader();
+            reader.onloadend = () => {
+              onSave(reader.result);
+            };
+            reader.onerror = () => {
+              console.error("Failed to convert blob to data URL");
+              setError("Failed to export image. Please try again.");
+              setIsExporting(false);
+            };
+            reader.readAsDataURL(blob);
+          } else {
+            setIsExporting(false);
           }
-          setIsExporting(false);
         },
-        "image/png",
-        1
+        "image/jpeg",
+        0.9
       );
     } catch (err) {
       console.error("Export failed:", err);

@@ -55,6 +55,38 @@ function drawCropGuide(ctx, size, lineWidth = 1, color = "rgba(6, 182, 212, 0.6)
   ctx.stroke();
 }
 
+/**
+ * Shared rendering math used by BOTH the preview canvas and the export canvas.
+ * Given the image, viewport size, zoom, baseFitScale, position, rotation, and
+ * flip, it draws the image onto the provided 2D context centered in the
+ * viewport with the same framing seen by the user.
+ *
+ * This guarantees that preview and export use the SAME coordinate calculation,
+ * so what the user sees inside the circle IS what gets exported.
+ *
+ * @param {CanvasRenderingContext2D} ctx
+ * @param {HTMLImageElement} img
+ * @param {number} viewportSize  - width/height of the square viewport (CSS pixels)
+ * @param {object} params - { zoom, baseFitScale, position, rotation, flip, scale }
+ */
+function renderImageToCanvas(ctx, img, viewportSize, { zoom, baseFitScale, position, rotation, flip }) {
+  ctx.save();
+  ctx.translate(viewportSize / 2, viewportSize / 2);
+  ctx.rotate((rotation * Math.PI) / 180);
+  ctx.scale(flip.x, flip.y);
+  const scale = zoom * baseFitScale;
+  const drawWidth = img.naturalWidth * scale;
+  const drawHeight = img.naturalHeight * scale;
+  ctx.drawImage(
+    img,
+    -drawWidth / 2 + position.x,
+    -drawHeight / 2 + position.y,
+    drawWidth,
+    drawHeight
+  );
+  ctx.restore();
+}
+
 function ProfilePhotoEditor({
   isOpen,
   onClose,
@@ -162,21 +194,9 @@ function ProfilePhotoEditor({
     canvas.style.height = `${containerSize}px`;
     ctx.scale(dpr, dpr);
     ctx.clearRect(0, 0, containerSize, containerSize);
-    ctx.save();
-    ctx.translate(containerSize / 2, containerSize / 2);
-    ctx.rotate((rotation * Math.PI) / 180);
-    ctx.scale(flip.x, flip.y);
-    const scale = zoom * baseFitScale;
-    const drawWidth = img.naturalWidth * scale;
-    const drawHeight = img.naturalHeight * scale;
-    ctx.drawImage(
-      img,
-      -drawWidth / 2 + position.x,
-      -drawHeight / 2 + position.y,
-      drawWidth,
-      drawHeight
-    );
-    ctx.restore();
+    renderImageToCanvas(ctx, img, containerSize, {
+      zoom, baseFitScale, position, rotation, flip,
+    });
     if (interactionMode === "crop") {
       drawCropGuide(ctx, containerSize);
     }
@@ -286,19 +306,32 @@ function ProfilePhotoEditor({
       const ctx = canvas.getContext("2d");
       canvas.width = OUTPUT_SIZE;
       canvas.height = OUTPUT_SIZE;
-      const scale = zoom * baseFitScale;
-      const drawWidth = img.naturalWidth * scale;
-      const drawHeight = img.naturalHeight * scale;
-      ctx.translate(OUTPUT_SIZE / 2, OUTPUT_SIZE / 2);
-      ctx.rotate((rotation * Math.PI) / 180);
-      ctx.scale(flip.x, flip.y);
-      ctx.drawImage(
-        img,
-        -drawWidth / 2 + position.x * (OUTPUT_SIZE / containerSize),
-        -drawHeight / 2 + position.y * (OUTPUT_SIZE / containerSize),
-        drawWidth * (OUTPUT_SIZE / containerSize),
-        drawHeight * (OUTPUT_SIZE / containerSize)
-      );
+      // Render with the SAME framing as the preview, scaled to OUTPUT_SIZE.
+      // The preview uses renderImageToCanvas with viewport=containerSize.
+      // For export we use viewport=OUTPUT_SIZE, with zoom and position scaled
+      // proportionally by (OUTPUT_SIZE / containerSize) so the relative framing
+      // matches exactly what the user sees inside the circle overlay.
+      const scaleRatio = OUTPUT_SIZE / containerSize;
+      const exportZoom = zoom * scaleRatio;
+      const exportPosition = {
+        x: position.x * scaleRatio,
+        y: position.y * scaleRatio,
+      };
+
+      // Render using the shared renderImageToCanvas function so that the export
+      // uses the EXACT same coordinate math as the preview. zoom and position are
+      // scaled by (OUTPUT_SIZE / containerSize) so the relative framing matches
+      // what the user sees inside the circle overlay in the preview.
+      // No circle clipping is applied — the exported JPEG is a full square,
+      // and the circular display is handled by the browser via object-cover +
+      // rounded-full, matching how UserAvatar.jsx renders profile pictures.
+      renderImageToCanvas(ctx, img, OUTPUT_SIZE, {
+        zoom: exportZoom,
+        baseFitScale,
+        position: exportPosition,
+        rotation,
+        flip,
+      });
       canvas.toBlob(
         (blob) => {
           if (blob) {

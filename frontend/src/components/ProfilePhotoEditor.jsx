@@ -308,7 +308,9 @@ function ProfilePhotoEditor({
             // to {} and the backend cannot parse it, causing a 500 timeout.
             const reader = new FileReader();
             reader.onloadend = () => {
-              onSave(reader.result);
+              onSave(reader.result).finally(() => {
+                setIsExporting(false);
+              });
             };
             reader.onerror = () => {
               console.error("Failed to convert blob to data URL");

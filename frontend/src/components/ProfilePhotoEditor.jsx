@@ -128,13 +128,12 @@ function ProfilePhotoEditor({
     setRotation(0);
     setFlip({ x: 1, y: 1 });
     setInteractionMode("move");
-    if (imageRef.current) {
-      imageRef.current.src = "";
-    }
+    // Clear the ref so the next image load effect starts fresh.
+    imageRef.current = null;
   }, [isOpen, imageSrc]);
 
   useEffect(() => {
-    if (!imageSrc || !imageRef.current) return;
+    if (!imageSrc) return;
     const token = ++loadTokenRef.current;
     const img = new Image();
     img.crossOrigin = "anonymous";
@@ -382,6 +381,18 @@ function ProfilePhotoEditor({
     }
   }, []);
 
+  // Wheel must use a native listener with passive: false because handleWheel
+  // calls e.preventDefault() to suppress page scroll. React's onWheel is
+  // passive by default (React 17+) and would throw "Unable to preventDefault
+  // inside passive event listener invocation."
+  useEffect(() => {
+    if (containerRef.current) {
+      const el = containerRef.current;
+      el.addEventListener("wheel", handleWheel, { passive: false });
+      return () => el.removeEventListener("wheel", handleWheel, { passive: false });
+    }
+  }, [handleWheel]);
+
   const modalContent = (
     <AnimatePresence>
       {isOpen && (
@@ -405,7 +416,6 @@ function ProfilePhotoEditor({
             onMouseMove={handleMouseMove}
             onMouseUp={handleMouseUp}
             onMouseLeave={handleMouseUp}
-            onWheel={handleWheel}
           >
             <div className="relative rounded-3xl overflow-hidden glass-panel" style={{ background: "var(--panel-strong)" }}>
               <div className="flex items-center justify-between p-4 border-b border-white/10">

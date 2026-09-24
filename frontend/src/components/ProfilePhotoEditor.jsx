@@ -95,6 +95,7 @@ function ProfilePhotoEditor({
   uploading = false,
 }) {
   const [baseFitScale, setBaseFitScale] = useState(1);
+  const [fitZoom, setFitZoom] = useState(1);
   const [zoom, setZoom] = useState(1);
   const [position, setPosition] = useState({ x: 0, y: 0 });
   const [rotation, setRotation] = useState(0);
@@ -127,18 +128,19 @@ function ProfilePhotoEditor({
   flipRef.current = flip;
 
   const resetTransform = useCallback(() => {
-    setZoom(baseFitScale);
+    setZoom(fitZoom);
     setPosition({ x: 0, y: 0 });
     setRotation(0);
     setFlip({ x: 1, y: 1 });
     setInteractionMode("move");
-  }, [baseFitScale]);
+  }, [fitZoom]);
 
   const handleImageLoad = useCallback(() => {
     const img = imageRef.current;
     if (!img || !containerRef.current) return;
     const fitScale = getFitScale(img, containerSize, rotation);
-    setBaseFitScale(fitScale);
+    setBaseFitScale(1);
+    setFitZoom(fitScale);
     setZoom(fitScale);
     setPosition({ x: 0, y: 0 });
     setImageLoaded(true);
@@ -293,9 +295,9 @@ function ProfilePhotoEditor({
   }, []);
 
   const handleFit = useCallback(() => {
-    setZoom(baseFitScale);
+    setZoom(fitZoom);
     setPosition({ x: 0, y: 0 });
-  }, [baseFitScale]);
+  }, [fitZoom]);
 
   const handleExport = useCallback(async () => {
     if (!imageRef.current?.naturalWidth || !onSave) return;

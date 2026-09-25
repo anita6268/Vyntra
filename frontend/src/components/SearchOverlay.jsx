@@ -49,6 +49,8 @@ function useRecentSearches() {
 
 function isPhoneLike(input) {
   if (!input || typeof input !== "string") return false;
+  // Email addresses contain @ — guard against treating them as phone numbers.
+  if (input.includes("@")) return false;
   const digits = input.replace(/[^\d]/g, "");
   return digits.length >= 7 && digits.length <= 15;
 }

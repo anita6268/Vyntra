@@ -145,7 +145,7 @@ export const useChatStore = create((set, get) => ({
   },
 
   setActiveTab: (tab) => set({ activeTab: tab }),
-  setSelectedUser: (selectedUser) => {
+    setSelectedUser: (selectedUser) => {
     set({
       selectedUser,
       // Opening a direct chat clears any open group chat & its relationship bits.
@@ -153,13 +153,19 @@ export const useChatStore = create((set, get) => ({
       isBlocked: selectedUser?.isBlocked === true,
       hasBlockedMe: selectedUser?.hasBlockedMe === true,
       isMuted: selectedUser?.isMuted === true,
+      // Clear the previous conversation's messages so stale content from a
+      // previously-open chat is not shown while the fresh fetch loads.
+      // (getMessagesByUserId now *merges* instead of replaces, so the clearing
+      // must happen here — at conversation-switch time — rather than inside the
+      // fetch itself.)
+      messages: [],
     });
     // Opening a conversation clears its real unread count.
     if (selectedUser?._id) get().markConversationRead(selectedUser._id);
   },
 
   // ── Group state ─────────────────────────────────────────────────────────────
-  setSelectedGroup: (selectedGroup) => {
+    setSelectedGroup: (selectedGroup) => {
     set({
       selectedGroup,
       // Opening a group chat clears any open direct chat + block/mute bits.
@@ -167,6 +173,9 @@ export const useChatStore = create((set, get) => ({
       isBlocked: false,
       hasBlockedMe: false,
       isMuted: false,
+      // Clear the previous conversation's messages — same rationale as
+      // setSelectedUser.
+      messages: [],
     });
         if (selectedGroup?._id) get().markGroupRead(selectedGroup._id);
   },
@@ -349,17 +358,27 @@ export const useChatStore = create((set, get) => ({
   },
 
   // Fetch the messages for the open group.
-  getMessagesByGroupId: async (groupId) => {
-    set({ isMessagesLoading: true, messages: [], messagesError: null });
+    getMessagesByGroupId: async (groupId) => {
+    // Merge (not replace) so messages sent while the fetch is in-flight are
+    // not wiped by a stale [] response — same race-condition fix as
+    // getMessagesByUserId.  Clearing of previous-conversation messages is
+    // handled by setSelectedGroup instead.
+    set({ isMessagesLoading: true, messagesError: null });
     try {
       const res = await axiosInstance.get(`/messages/group/${groupId}`);
       const raw = Array.isArray(res.data) ? res.data : [];
-      const deduped = [...new Map(raw.map((m) => [String(m._id), m])).values()];
-      set({ messages: deduped, messagesError: null });
+      const fetched = [...new Map(raw.map((m) => [String(m._id), m])).values()];
+      set((state) => {
+        const merged = new Map(state.messages.map((m) => [String(m._id), m]));
+        for (const m of fetched) {
+          merged.set(String(m._id), m);
+        }
+        return { messages: Array.from(merged.values()), messagesError: null };
+      });
     } catch (error) {
       const msg = error.response?.data?.message || error.message || "Failed to load messages";
       toast.error(msg);
-      set({ messages: [], messagesError: msg });
+      set({ messagesError: msg });
     } finally {
       set({ isMessagesLoading: false });
     }
@@ -770,17 +789,29 @@ export const useChatStore = create((set, get) => ({
     }));
   },
 
-  getMessagesByUserId: async (userId) => {
-    set({ isMessagesLoading: true, messages: [], messagesError: null });
+      getMessagesByUserId: async (userId) => {
+    // Do NOT clear `messages` here — clearing creates a race where a message
+    // sent during this in-flight fetch is destroyed by the stale [] write
+    // when the (pre-save) response arrives.  Clearing of previous-conversation
+    // messages is handled by setSelectedUser instead.  We merge the server
+    // result with any messages that were optimistically added during the fetch
+    // so sent messages survive even if the backend query ran before the save.
+    set({ isMessagesLoading: true, messagesError: null });
     try {
       const res = await axiosInstance.get(`/messages/${userId}`);
       const raw = Array.isArray(res.data) ? res.data : [];
-      const deduped = [...new Map(raw.map((m) => [String(m._id), m])).values()];
-      set({ messages: deduped, messagesError: null });
+      const fetched = [...new Map(raw.map((m) => [String(m._id), m])).values()];
+      set((state) => {
+        const merged = new Map(state.messages.map((m) => [String(m._id), m]));
+        for (const m of fetched) {
+          merged.set(String(m._id), m);
+        }
+        return { messages: Array.from(merged.values()), messagesError: null };
+      });
     } catch (error) {
       const msg = error.response?.data?.message || error.message || "Failed to load messages";
       toast.error(msg);
-      set({ messages: [], messagesError: msg });
+      set({ messagesError: msg });
     } finally {
       set({ isMessagesLoading: false });
     }

@@ -55,13 +55,23 @@ function isPhoneLike(input) {
   return digits.length >= 7 && digits.length <= 15;
 }
 
+function isEmailInput(input) {
+  if (!input || typeof input !== "string") return false;
+  const v = input.trim();
+  const at = v.indexOf("@");
+  if (at <= 0 || at === v.length - 1) return false;
+  const rest = v.slice(at + 1);
+  const dot = rest.indexOf(".");
+  return dot > 0 && dot < rest.length - 1;
+}
+
 function SearchOverlay({ isOpen, onClose }) {
   const [query, setQuery] = useState("");
   const [selectedIndex, setSelectedIndex] = useState(-1);
   const inputRef = useRef(null);
   const listRef = useRef(null);
   const { recent, addRecent, clearRecent } = useRecentSearches();
-  const { chats, isUsersLoading, getMyChatPartners, lookupContactByPhone, setSelectedUser, setActiveTab } = useChatStore();
+  const { chats, isUsersLoading, getMyChatPartners, lookupContactByPhone, lookupContact, setSelectedUser, setActiveTab } = useChatStore();
 
   const q = query.trim();
 
@@ -94,6 +104,7 @@ function SearchOverlay({ isOpen, onClose }) {
   }, [q, isOpen, getMyChatPartners]);
 
   const [phoneResults, setPhoneResults] = useState([]);
+  const [emailResults, setEmailResults] = useState([]);
 
   useEffect(() => {
     if (!q) {
@@ -116,6 +127,27 @@ function SearchOverlay({ isOpen, onClose }) {
     }
   }, [q, lookupContactByPhone]);
 
+  useEffect(() => {
+    if (!q) {
+      setEmailResults([]);
+      return;
+    }
+    if (isEmailInput(q)) {
+      let cancelled = false;
+      setEmailResults([]);
+      lookupContact(q).then((users) => {
+        if (!cancelled) {
+          setEmailResults(Array.isArray(users) ? users : users ? [users] : []);
+        }
+      });
+      return () => {
+        cancelled = true;
+      };
+    } else {
+      setEmailResults([]);
+    }
+  }, [q, lookupContact]);
+
   const chatResults = useMemo(() => {
     if (!q) return [];
     return chats
@@ -125,13 +157,21 @@ function SearchOverlay({ isOpen, onClose }) {
 
   const allResults = useMemo(() => {
     const results = [...chatResults];
+    const seen = new Set(results.map((c) => String(c._id)));
     phoneResults.forEach((phoneUser) => {
-      if (!chatResults.some((c) => String(c._id) === String(phoneUser._id))) {
+      if (!seen.has(String(phoneUser._id))) {
+        seen.add(String(phoneUser._id));
         results.push(phoneUser);
       }
     });
+    emailResults.forEach((emailUser) => {
+      if (!seen.has(String(emailUser._id))) {
+        seen.add(String(emailUser._id));
+        results.push(emailUser);
+      }
+    });
     return results;
-  }, [chatResults, phoneResults]);
+  }, [chatResults, phoneResults, emailResults]);
 
   const handleSelect = (user) => {
     addRecent(q);
@@ -303,6 +343,30 @@ function SearchOverlay({ isOpen, onClose }) {
                       </button>
                     );
                   })}
+                  {emailResults.length > 0 && (
+                    <div className="mb-1 mt-3 px-2 text-[10px] font-semibold uppercase tracking-wider text-[color:var(--text-muted)]">People</div>
+                  )}
+                  {emailResults.map((emailResult, idx) => {
+                    const resultIndex = chatResults.length + phoneResults.length + idx;
+                    return (
+                      <button
+                        key={`contact-${emailResult._id}`}
+                        data-search-item
+                        onClick={() => handleSelect(emailResult)}
+                        onMouseEnter={() => setSelectedIndex(resultIndex)}
+                        className={`flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left transition-colors ${
+                          selectedIndex === resultIndex ? "bg-white/10 text-[color:var(--text-primary)]" : "text-[color:var(--text-muted)] hover:bg-white/5"
+                        }`}
+                      >
+                        <img src={emailResult.profilePic || "/avatar.png"} alt={emailResult.fullName} className="size-8 rounded-full object-cover" />
+                        <div className="min-w-0 flex-1">
+                          <p className="truncate text-sm font-medium"><HighlightText text={emailResult.fullName} query={q} /></p>
+                          <p className="truncate text-[11px] opacity-70">On Vyntra</p>
+                        </div>
+                      </button>
+                    );
+                  })}
+
                 </div>
               )}
 

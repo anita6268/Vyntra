@@ -13,9 +13,29 @@ import usePremiumStore from "../store/usePremiumStore";
  * PRO usage (inside event handlers):
  *   import { promptUpgrade } from "../lib/premiumGating";
  *   if (!canUsePremiumFeature(PREMIUM_FEATURES.THEMES)) return promptUpgrade("Premium themes are available with Vyntra Pro.", PREMIUM_FEATURES.THEMES);
+ *
+ * SINGLETON: Only ONE upgrade prompt can ever be visible at a time.
+ * `promptUpgrade` is the single choke point for ALL Pro-gated features
+ * (Translate, Grammar Fix, Smart Reply, themes, calls, widgets, ...). It
+ * (1) early-returns if the centralized Vyntra Pro modal is already open
+ *     (store.isUpgradeOpen), and (2) tags the toast with a stable `id` so
+ *     react-hot-toast reuses/updates the existing prompt instead of stacking a
+ *     duplicate when a feature is triggered rapidly several times. Future
+ *     Pro-gated features MUST route through `promptUpgrade`.
  */
+// Stable id so react-hot-toast REUSES this prompt instead of stacking duplicates
+// when a premium feature is triggered multiple times in rapid succession (e.g.
+// double-clicking the Translate / Grammar Fix / Smart Reply buttons). react-hot-toast
+// updates an existing toast that shares an `id` rather than enqueueing a new one.
+const UPGRADE_PROMPT_TOAST_ID = "vyntra-pro-upgrade-prompt";
+
 export function promptUpgrade(message) {
    const store = usePremiumStore.getState();
+
+   // The centralized Vyntra Pro modal is already open - do not stack a second
+   // upgrade prompt on top of it. Uses the existing modal state as the single
+   // source of truth so only one Pro prompt/modal can ever be visible at once.
+   if (store.isUpgradeOpen) return;
 
    const displayMessage = message || "This feature is available with Vyntra Pro.";
 
@@ -53,5 +73,5 @@ export function promptUpgrade(message) {
         Maybe later
       </button>
     </div>
-  ), { duration: 6000 });
+  ), { id: UPGRADE_PROMPT_TOAST_ID, duration: 6000 });
 }

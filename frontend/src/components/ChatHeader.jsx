@@ -174,7 +174,7 @@ function ChatHeader({
       ];
 
   return (
-    <div className="relative z-[100] flex shrink-0 items-center justify-between gap-3 overflow-visible border-b border-white/[0.08] bg-white/[0.08] px-3 py-3 backdrop-blur-xl sm:px-5">
+    <div className="relative z-[100] flex shrink-0 items-center justify-between gap-3 overflow-visible border-b border-white/[0.08] bg-white/[0.08] px-3 safe-top py-3 backdrop-blur-xl sm:px-5">
       {/* Animated border glow */}
       <div className="pointer-events-none absolute inset-x-0 bottom-0 h-px bg-gradient-to-r from-transparent via-[color:var(--accent-3)]/40 to-transparent" />
 
@@ -203,7 +203,7 @@ function ChatHeader({
           }}
           className="relative shrink-0 cursor-pointer"
         >
-          <div className="flex size-11 items-center justify-center rounded-full border border-white/15 bg-gradient-to-br from-[color:var(--accent)] to-[color:var(--accent-3)] p-[2px] shadow-[0_0_14px_var(--glow)] ring-2 ring-[color:var(--accent-3)]/20">
+          <div className="flex size-9 sm:size-11 items-center justify-center rounded-full border border-white/15 bg-gradient-to-br from-[color:var(--accent)] to-[color:var(--accent-3)] p-[2px] shadow-[0_0_14px_var(--glow)] ring-2 ring-[color:var(--accent-3)]/20">
             {chatAvatar ? (
               <img src={chatAvatar} alt={chatName} className="size-full rounded-full object-cover" />
             ) : (

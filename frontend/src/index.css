@@ -977,3 +977,45 @@ body {
     animation: none;
   }
 }
+
+/* ===== Mobile safe-area insets (notch, dynamic browser toolbar) ===== */
+.safe-top { padding-top: env(safe-area-inset-top); }
+.safe-bottom { padding-bottom: env(safe-area-inset-bottom); }
+.safe-left { padding-left: env(safe-area-inset-left); }
+.safe-right { padding-right: env(safe-area-inset-right); }
+.safe-x { padding-left: env(safe-area-inset-left); padding-right: env(safe-area-inset-right); }
+
+/* Compact mobile: tighter button padding, smaller icons, smaller composer buttons */
+@media (max-width: 639px) {
+  /* Premium header buttons: compact padding + smaller icons */
+  .premium-button {
+    padding: 0.35rem;
+  }
+  .premium-button svg {
+    width: 0.85rem;
+    height: 0.85rem;
+  }
+  .premium-badge {
+    top: 0.15rem;
+    right: 0.15rem;
+    padding: 0.05rem 0.25rem;
+    font-size: 0.55rem;
+  }
+  .premium-button span {
+    font-size: 0.625rem;
+  }
+
+  /* Composer buttons: slightly smaller on mobile */
+  .composer-btn {
+    width: 32px;
+    height: 32px;
+  }
+  .composer-btn-lg {
+    width: 36px;
+    height: 36px;
+  }
+  .glow-send {
+    width: 40px;
+    height: 40px;
+  }
+}

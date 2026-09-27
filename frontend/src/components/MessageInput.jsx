@@ -535,8 +535,8 @@ function MessageInput({ onOpenAI, insertTextRef, replyTo, onClearReply, blocked,
   };
 
   return (
-    <div className="px-3 pb-3 pt-1 sm:px-4 sm:pb-4">
-      <div className="mx-auto max-w-[1000px] rounded-[22px] border border-white/[0.08] bg-[color:var(--panel-strong)] p-2 shadow-[0_-2px_12px_rgba(0,0,0,0.12)] backdrop-blur-2xl sm:p-2.5">
+    <div className="px-3 pb-3 pt-1 safe-bottom sm:px-4 sm:pb-4">
+      <div className="mx-auto max-w-[1000px] rounded-[16px] border border-white/[0.08] bg-[color:var(--panel-strong)] p-1.5 shadow-[0_-2px_12px_rgba(0,0,0,0.12)] backdrop-blur-2xl sm:rounded-[22px] sm:p-2.5">
         {/* Image preview */}
         <AnimatePresence>
           {imagePreview && (
@@ -708,7 +708,7 @@ function MessageInput({ onOpenAI, insertTextRef, replyTo, onClearReply, blocked,
             <input type="file" accept="image/*" ref={fileInputRef} onChange={handleImageChange} className="hidden" />
           </div>
 
-          <div className={`relative flex flex-1 items-center gap-1 rounded-[28px] border px-2 py-1.5 shadow-inner transition-all ${isDragOver ? "composer-drag-over" : ""} ${canSend ? "border-[color:var(--accent-3)]/50 bg-[color:var(--panel-strong)] shadow-[0_0_0_2px_rgba(6,182,212,0.18)]" : "border-white/10 bg-[color:var(--panel-strong)]"}`}>
+          <div className={`relative flex flex-1 items-center gap-0.5 rounded-[20px] border px-1.5 py-1 shadow-inner transition-all sm:gap-1 sm:rounded-[28px] sm:px-2 sm:py-1.5 ${isDragOver ? "composer-drag-over" : ""} ${canSend ? "border-[color:var(--accent-3)]/50 bg-[color:var(--panel-strong)] shadow-[0_0_0_2px_rgba(6,182,212,0.18)]" : "border-white/10 bg-[color:var(--panel-strong)]"}`}>
             {/* Emoji picker */}
             <div ref={emojiRef} className="relative">
               <motion.button

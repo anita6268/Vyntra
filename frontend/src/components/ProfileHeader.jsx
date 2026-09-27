@@ -105,13 +105,28 @@ function ProfileHeader({ theme, setTheme, onOpenMyProfile }) {
           className="flex min-w-0 flex-1 cursor-pointer items-center gap-3 text-left"
           aria-label="Open My Profile"
         >
-          <UserAvatar
-            src={previewUrl || authUser?.profilePic}
-            name={authUser?.fullName}
-            size={52}
-            online={isOnline}
-            className="size-12 shrink-0"
-          />
+          <div className="relative inline-block shrink-0">
+            <UserAvatar
+              src={previewUrl || authUser?.profilePic}
+              name={authUser?.fullName}
+              size={52}
+              online={isOnline}
+              className="size-12"
+            />
+            <div className="absolute bottom-1 right-1 z-20">
+              <ActionButton
+                icon={CameraIcon}
+                label="Change profile photo"
+                disabled={uploading}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  openCamera();
+                }}
+              >
+                {uploading ? <Loader2Icon className="size-3.5 animate-spin" /> : <CameraIcon className="size-3.5" />}
+              </ActionButton>
+            </div>
+          </div>
           <div className="min-w-0 flex-1">
             <div className="flex items-center gap-2">
               <h3 className="min-w-0 flex-1 truncate text-[15px] font-bold leading-tight text-[color:var(--text-primary)]">
@@ -130,41 +145,28 @@ function ProfileHeader({ theme, setTheme, onOpenMyProfile }) {
           </div>
         </button>
 
-        {/* Right: compact action buttons (change photo / theme / sound / logout) */}
+                {/* Right: compact action buttons (gallery / theme / sound / logout) */}
         <div className="flex shrink-0 items-center gap-1">
-          <div className="relative">
-            <ActionButton
-              icon={CameraIcon}
-              label="Change profile photo"
-              disabled={uploading}
-              onClick={(e) => {
-                e.stopPropagation();
-                openCamera();
-              }}
-            >
-              {uploading ? <Loader2Icon className="size-3.5 animate-spin" /> : <CameraIcon className="size-3.5" />}
-            </ActionButton>
-            <input
-              type="file"
-              accept="image/jpeg,image/png,image/webp"
-              ref={fileInputRef}
-              onChange={handleImageUpload}
-              className="hidden"
-            />
-            <button
-              type="button"
-              onClick={(e) => {
-                e.stopPropagation();
-                openGallery();
-              }}
-              disabled={uploading}
-              aria-label="Choose profile photo from gallery"
-              title="Gallery"
-              className="absolute bottom-1 right-1 flex size-5 items-center justify-center rounded-full border border-white/10 bg-[color:var(--panel-strong)] text-[color:var(--text-muted)] transition-colors hover:bg-white/10 hover:text-[color:var(--text-primary)]"
-            >
-              <ImageIcon className="size-3.5" />
-            </button>
-          </div>
+          <input
+            type="file"
+            accept="image/jpeg,image/png,image/webp"
+            ref={fileInputRef}
+            onChange={handleImageUpload}
+            className="hidden"
+          />
+          <button
+            type="button"
+            onClick={(e) => {
+              e.stopPropagation();
+              openGallery();
+            }}
+            disabled={uploading}
+            aria-label="Choose profile photo from gallery"
+            title="Gallery"
+            className="relative z-10 flex size-9 items-center justify-center rounded-full border border-white/10 bg-[color:var(--panel-strong)] text-[color:var(--text-muted)] transition-colors hover:bg-white/10 hover:text-[color:var(--text-primary)]"
+          >
+            <ImageIcon className="size-4" />
+          </button>
           <ActionButton
             icon={PaletteIcon}
             label={isPro ? "Theme palette" : "Theme palette (PRO)"}

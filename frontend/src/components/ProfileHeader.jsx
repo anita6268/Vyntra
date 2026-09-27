@@ -1,4 +1,4 @@
-import { useCallback, useState, useRef, lazy, Suspense } from "react";
+﻿import { useCallback, useState, useRef, lazy, Suspense } from "react";
 import { LogOutIcon, VolumeOffIcon, Volume2Icon, PaletteIcon, ZapIcon, CameraIcon, ImageIcon, Loader2Icon } from "lucide-react";
 import { motion } from "framer-motion";
 import { useAuthStore } from "../store/useAuthStore";
@@ -105,27 +105,30 @@ function ProfileHeader({ theme, setTheme, onOpenMyProfile }) {
           className="flex min-w-0 flex-1 cursor-pointer items-center gap-3 text-left"
           aria-label="Open My Profile"
         >
-          <div className="relative inline-block shrink-0">
-            <UserAvatar
+            <div className="relative inline-block shrink-0">
+            <UserAvatar 
               src={previewUrl || authUser?.profilePic}
               name={authUser?.fullName}
               size={52}
               online={isOnline}
               className="size-12"
             />
-            <div className="absolute bottom-1 right-1 z-20">
-              <ActionButton
-                icon={CameraIcon}
-                label="Change profile photo"
-                disabled={uploading}
-                onClick={(e) => {
-                  e.stopPropagation();
-                  openCamera();
-                }}
-              >
-                {uploading ? <Loader2Icon className="size-3.5 animate-spin" /> : <CameraIcon className="size-3.5" />}
-              </ActionButton>
-            </div>
+            <button
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation();
+                openCamera();
+              }}
+              disabled={uploading}
+              aria-label="Change profile photo"
+              className="absolute -bottom-7 -right-5 z-30 flex size-7 items-center justify-center rounded-full border border-white/10 bg-white/5 text-[color:var(--text-muted)] backdrop-blur-xl shadow-[0_0_18px_rgba(0,0,0,0.25)] transition-colors hover:bg-white/10 hover:text-[color:var(--text-primary)]"
+            >
+              {uploading ? (
+                <Loader2Icon className="size-3.5 animate-spin" />
+              ) : (
+                <CameraIcon className="size-3.5" />
+              )}
+            </button>
           </div>
           <div className="min-w-0 flex-1">
             <div className="flex items-center gap-2">

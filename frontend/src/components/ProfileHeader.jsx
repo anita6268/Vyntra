@@ -121,7 +121,7 @@ function ProfileHeader({ theme, setTheme, onOpenMyProfile }) {
               }}
               disabled={uploading}
               aria-label="Change profile photo"
-              className="absolute -bottom-7 -right-5 z-30 flex size-7 items-center justify-center rounded-full border border-white/10 bg-white/5 text-[color:var(--text-muted)] backdrop-blur-xl shadow-[0_0_18px_rgba(0,0,0,0.25)] transition-colors hover:bg-white/10 hover:text-[color:var(--text-primary)]"
+              className="absolute bottom-1 right-1 z-20 flex size-7 items-center justify-center rounded-full border border-white/10 bg-white/5 text-[color:var(--text-muted)] backdrop-blur-xl shadow-[0_0_18px_rgba(0,0,0,0.25)] transition-colors hover:bg-white/10 hover:text-[color:var(--text-primary)]"
             >
               {uploading ? (
                 <Loader2Icon className="size-3.5 animate-spin" />

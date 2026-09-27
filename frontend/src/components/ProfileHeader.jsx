@@ -114,7 +114,7 @@ function ProfileHeader({ theme, setTheme, onOpenMyProfile }) {
           />
           <div className="min-w-0 flex-1">
             <div className="flex items-center gap-2">
-              <h3 className="truncate text-[15px] font-bold leading-tight text-[color:var(--text-primary)]">
+              <h3 className="min-w-0 flex-1 truncate text-[15px] font-bold leading-tight text-[color:var(--text-primary)]">
                 {authUser?.fullName}
               </h3>
               {isPro && (
@@ -160,7 +160,7 @@ function ProfileHeader({ theme, setTheme, onOpenMyProfile }) {
               disabled={uploading}
               aria-label="Choose profile photo from gallery"
               title="Gallery"
-              className="absolute -right-9 top-0 flex size-7 items-center justify-center rounded-full border border-white/10 bg-[color:var(--panel-strong)] text-[color:var(--text-muted)] transition-colors hover:bg-white/10 hover:text-[color:var(--text-primary)]"
+              className="absolute bottom-1 right-1 flex size-5 items-center justify-center rounded-full border border-white/10 bg-[color:var(--panel-strong)] text-[color:var(--text-muted)] transition-colors hover:bg-white/10 hover:text-[color:var(--text-primary)]"
             >
               <ImageIcon className="size-3.5" />
             </button>

@@ -307,7 +307,7 @@ const toggleAI = (force) =>
       </div>
 
       <BorderAnimatedContainer className="flex-1 min-w-0">
-        <div className="relative flex h-full min-h-0 w-full overflow-hidden md:flex-row">
+        <div className="relative flex h-full min-h-0 w-full overflow-hidden flex-col md:flex-row">
           {/* Mobile sidebar overlay */}
           {isMobileSidebarOpen && (
             <div className="fixed inset-0 z-40 bg-black/50 backdrop-blur-sm md:hidden" onClick={() => setIsMobileSidebarOpen(false)} />

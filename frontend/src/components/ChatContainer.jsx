@@ -798,7 +798,7 @@ const handleDeleteConfirmed = async (scope) => {
         onToggleWallpaperSettings={() => setWallpaperSettingsOpen((o) => !o)}
       />
 
-      <div className="flex min-h-0 flex-1">
+      <div className="flex flex-col min-h-0 flex-1">
         <div className="relative z-[1] flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden">
           {!wallpaper && <AnimatedChatBackground />}
 
@@ -868,11 +868,11 @@ const handleDeleteConfirmed = async (scope) => {
              <div
                ref={scrollRef}
                onScroll={handleMessageScroll}
-               className="scrollbar-thin relative z-[2] min-h-0 min-w-0 flex-1 overflow-y-auto overflow-x-hidden overscroll-y-contain px-4 pb-8 pt-6 sm:px-6"
+               className="scrollbar-thin relative z-[2] min-h-0 min-w-0 flex-1 overflow-y-auto overflow-x-hidden overscroll-y-contain px-3 pt-4 sm:px-6 sm:pt-6 mobile-safe-bottom"
                style={{ scrollbarGutter: "stable" }}
              >
               {filteredMessages.length > 0 && !isMessagesLoading ? (
-                <div className="mx-auto flex w-full max-w-[1000px] flex-col gap-5">
+                <div className="mx-auto flex w-full max-w-[1000px] flex-col gap-3 sm:gap-5">
                   {filteredMessages.map((msg, idx) => {
                     const isSelf = String(msg.senderId) === String(authUser._id);
                     const myReaction = myReactionEmoji(msg);

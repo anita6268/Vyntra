@@ -999,6 +999,25 @@ body {
   .safe-inset  { padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 1rem); }
 }
 
+/* ===== Mobile safe-area-inset-bottom for chat layout ===== */
+/* mobile-safe-bottom: base padding + safe-area-inset-bottom for the message
+   scroll list. Base is 1rem (16px) on mobile, 2rem (32px) at sm+ so desktop
+   retains the original pb-8 spacing. The env() is 0 on non-iOS/desktop. */
+.mobile-safe-bottom {
+  padding-bottom: calc(1rem + env(safe-area-inset-bottom, 0px));
+}
+@media (min-width: 640px) {
+  .mobile-safe-bottom {
+    padding-bottom: calc(2rem + env(safe-area-inset-bottom, 0px));
+  }
+}
+/* mobile-safe-bottom-composer: safe-area-inset-bottom only (no base padding)
+   for the composer wrapper so it sits above the home-indicator / bottom bar
+   without adding extra visual height. */
+.mobile-safe-bottom-composer {
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+
 /* Compact mobile: tighter button padding, smaller icons, smaller composer buttons */
 @media (max-width: 639px) {
   /* Premium header buttons: compact padding + smaller icons */

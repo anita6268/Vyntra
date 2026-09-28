@@ -260,7 +260,7 @@ function ChatHeader({
           disabled={!callsAvailable}
           aria-disabled={!callsAvailable}
           aria-label={callsAvailable ? "Voice call" : `${chatName} is offline`}
-          className={`premium-button hidden sm:inline-flex ${callsAvailable ? "" : "disabled:cursor-not-allowed disabled:opacity-30"}`}
+          className={`premium-button inline-flex ${callsAvailable ? "" : "disabled:cursor-not-allowed disabled:opacity-30"}`}
         >
           <PhoneIcon className="size-3.5" />
         </motion.button>
@@ -271,7 +271,7 @@ function ChatHeader({
           disabled={!callsAvailable}
           aria-disabled={!callsAvailable}
           aria-label={callsAvailable ? "Video call" : `${chatName} is offline`}
-          className={`premium-button hidden md:inline-flex ${callsAvailable ? "" : "disabled:cursor-not-allowed disabled:opacity-30"}`}
+          className={`premium-button inline-flex ${callsAvailable ? "" : "disabled:cursor-not-allowed disabled:opacity-30"}`}
         >
           <VideoIcon className="size-3.5" />
         </motion.button>

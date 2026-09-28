@@ -93,7 +93,7 @@ function App() {
   if (isCheckingAuth) return <PageLoader />;
 
   return (
-    <div className="fixed inset-0 flex h-screen h-dvh w-screen overflow-hidden bg-[var(--app-bg)] text-[color:var(--text-primary)]">
+    <div className="fixed inset-0 flex h-dvh w-screen overflow-hidden bg-[var(--app-bg)] text-[color:var(--text-primary)]">
       <AuroraBackground />
       <FloatingParticles count={18} />
       <div className="absolute inset-0 bg-[linear-gradient(to_right,rgba(255,255,255,0.04)_1px,transparent_1px),linear-gradient(to_bottom,rgba(255,255,255,0.04)_1px,transparent_1px)] bg-[size:24px_24px]" />
@@ -122,7 +122,7 @@ function App() {
       )}
 
       {/* Definite-size content area: inset-0 = full viewport height, padding inside border-box */}
-      <div className="absolute inset-0 z-10 flex w-full justify-center overflow-hidden p-3 sm:p-4 lg:p-6">
+      <div className="absolute inset-0 z-10 flex flex-col w-full overflow-hidden p-3 sm:p-4 lg:p-6">
         <Routes>
           <Route path="/" element={authUser ? <ChatPage theme={theme} setTheme={handleThemeChange} /> : <Navigate to={"/login"} />} />
           <Route path="/login" element={!authUser ? <LoginPage /> : <Navigate to={"/"} />} />

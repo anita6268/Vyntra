@@ -890,7 +890,7 @@ function MessageInput({ onOpenAI, insertTextRef, replyTo, onClearReply, blocked,
             <SendIcon className="size-5" />
           </motion.button>
           </form>
-          <p className="mx-auto mt-2 max-w-[1000px] text-[11px] text-[color:var(--text-muted)]">
+          <p className="mx-auto mt-2 hidden max-w-[1000px] text-[11px] text-[color:var(--text-muted)] sm:block">
             Press Enter to send • Shift + Enter for a new line • Drag & drop files
           </p>
         </>

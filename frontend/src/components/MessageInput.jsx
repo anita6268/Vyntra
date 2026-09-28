@@ -496,9 +496,31 @@ function MessageInput({ onOpenAI, insertTextRef, replyTo, onClearReply, blocked,
       recordStartRef.current = Date.now();
       recordTimerRef.current = setInterval(() => setRecordSeconds((s) => s + 1), 1000);
       toast("Recording…", { icon: "🎙️" });
-    } catch {
-      toast.error("Microphone permission denied. Allow mic access to record voice messages.");
-      setRecordingState("idle");
+    } catch (err) {
+      const name = err?.name;
+      const isPermission = name === "NotAllowedError" || name === "PermissionDeniedError";
+      if (isPermission) {
+        toast.error("Microphone permission denied. Enable mic access in your browser's site settings, then tap to retry recording.", {
+          id: "voice-permission-error",
+          duration: 15000,
+          action: {
+            text: "Retry",
+            onClick: () => {
+              toast.dismiss("voice-permission-error");
+              startRecording();
+            },
+          },
+        });
+      } else if (name === "NotFoundError" || name === "DevicesNotFoundError") {
+        toast.error("No microphone was found on this device.");
+        setRecordingState("idle");
+      } else if (name === "NotReadableError") {
+        toast.error("Microphone is in use by another app. Close other apps and try again.");
+        setRecordingState("idle");
+      } else {
+        toast.error("Recording failed. Please try again.", { id: "voice-record-error" });
+        setRecordingState("idle");
+      }
     }
   };
 
@@ -691,7 +713,7 @@ function MessageInput({ onOpenAI, insertTextRef, replyTo, onClearReply, blocked,
             onDragOver={(e) => { e.preventDefault(); setIsDragOver(true); }}
             onDragLeave={() => setIsDragOver(false)}
             onDrop={handleDrop}
-            className="mx-auto flex max-w-[1000px] items-end gap-1 sm:gap-1.5"
+            className="flex w-full items-end gap-1 sm:gap-1.5"
           >
           {/* Plus button — quick attach menu */}
           <div className="relative">
@@ -708,7 +730,7 @@ function MessageInput({ onOpenAI, insertTextRef, replyTo, onClearReply, blocked,
             <input type="file" accept="image/*" ref={fileInputRef} onChange={handleImageChange} className="hidden" />
           </div>
 
-          <div className={`relative flex flex-1 items-center gap-0.5 rounded-[20px] border px-1.5 py-1 shadow-inner transition-all sm:gap-1 sm:rounded-[28px] sm:px-2 sm:py-1.5 ${isDragOver ? "composer-drag-over" : ""} ${canSend ? "border-[color:var(--accent-3)]/50 bg-[color:var(--panel-strong)] shadow-[0_0_0_2px_rgba(6,182,212,0.18)]" : "border-white/10 bg-[color:var(--panel-strong)]"}`}>
+          <div className={`relative flex min-w-0 flex-1 items-center gap-0.5 rounded-[20px] border px-1.5 py-1 shadow-inner transition-all sm:gap-1 sm:rounded-[28px] sm:px-2 sm:py-1.5 ${isDragOver ? "composer-drag-over" : ""} ${canSend ? "border-[color:var(--accent-3)]/50 bg-[color:var(--panel-strong)] shadow-[0_0_0_2px_rgba(6,182,212,0.18)]" : "border-white/10 bg-[color:var(--panel-strong)]"}`}>
             {/* Emoji picker */}
             <div ref={emojiRef} className="relative">
               <motion.button
@@ -826,7 +848,7 @@ function MessageInput({ onOpenAI, insertTextRef, replyTo, onClearReply, blocked,
               onBlur={cancelTyping}
               onKeyDown={handleKeyDown}
               disabled={blocked}
-              className="auto-grow-textarea min-w-0 flex-1 resize-none bg-transparent px-1 py-2 text-sm text-[color:var(--text-primary)] outline-none placeholder:text-[color:var(--text-muted)]/60 disabled:opacity-50"
+              className="auto-grow-textarea min-w-0 flex w-full flex-1 resize-none bg-transparent px-1 py-2 text-sm text-[color:var(--text-primary)] outline-none placeholder:text-[color:var(--text-muted)]/60 disabled:opacity-50"
               placeholder={blocked ? "You cannot send messages to this user" : isDragOver ? "Drop file to send…" : "Type a message... or drop a file"}
             />
 

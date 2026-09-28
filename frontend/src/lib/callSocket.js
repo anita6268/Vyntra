@@ -23,6 +23,17 @@ const FALLBACK_STUN = {
 
 let iceConfigCache = null;
 
+// - Retry support for media-permission errors -
+// Stores the last outbound call params so the user can retry after
+// granting microphone/camera permission in browser site-settings.
+let lastCallType = null;
+let lastCallContact = null;
+export function retryLastCall() {
+  if (lastCallType && lastCallContact) {
+    startCall(lastCallType, lastCallContact);
+  }
+}
+
 // Fetch the authenticated ICE config (STUN + optional TURN) from the backend.
 // Cached for the lifetime of the module so we only hit the endpoint once.
 async function fetchIceConfig() {
@@ -101,8 +112,9 @@ function acquireMedia(callType) {
 function handleMediaError(err, callType) {
   const name = err?.name;
   let message = "Couldn't access your camera or microphone.";
-  if (name === "NotAllowedError" || name === "PermissionDeniedError") {
-    message = "Microphone/camera permission was denied. Allow access and try again.";
+  const isPermission = name === "NotAllowedError" || name === "PermissionDeniedError";
+  if (isPermission) {
+    message = "Microphone/camera permission was denied. Enable access in your browser's site settings, then retry.";
   } else if (name === "NotFoundError" || name === "DevicesNotFoundError") {
     message = "No microphone or camera was found on this device.";
   } else if (name === "NotReadableError") {
@@ -110,9 +122,24 @@ function handleMediaError(err, callType) {
   } else if (name === "OverconstrainedError") {
     message = "The requested camera/microphone settings couldn't be satisfied.";
   }
-  toast.error(message);
-  setState({ status: "error", callType, errorMessage: message });
-  setTimeout(resetToIdle, 3500);
+  if (isPermission) {
+    toast.error(message, {
+      id: "media-permission-error",
+      duration: 15000,
+      action: {
+        text: "Retry",
+        onClick: () => {
+          toast.dismiss("media-permission-error");
+          retryLastCall();
+        },
+      },
+    });
+    setState({ status: "error", callType, errorMessage: message });
+  } else {
+    toast.error(message, { id: "media-error-" + callType });
+    setState({ status: "error", callType, errorMessage: message });
+    setTimeout(resetToIdle, 3500);
+  }
 }
 
 // ── Peer connection helpers ─────────────────────────────────────────────────
@@ -264,6 +291,9 @@ export async function startCall(callType, contact) {
   }
   if (!getAuth()) return;
 
+  lastCallType = callType;
+  lastCallContact = contact;
+
   // Acquire media first so permission errors surface before any signaling.
   let stream;
   try {
@@ -317,6 +347,10 @@ export async function startCall(callType, contact) {
 export async function acceptCall() {
   const current = useCallStore.getState();
   if (current.status !== "incoming") return;
+
+  // Store call params so the user can retry after granting permission.
+  lastCallType = current.callType;
+  lastCallContact = current.peer;
 
   let stream;
   try {

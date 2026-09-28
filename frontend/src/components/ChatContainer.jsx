@@ -1101,7 +1101,7 @@ const handleDeleteConfirmed = async (scope) => {
            </div>
            </div>
 
-           <div className="shrink-0">
+           <div className="shrink-0 w-full">
            <MessageInput
              onOpenAI={onToggleAI}
              insertTextRef={insertTextRef}

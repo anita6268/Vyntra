@@ -66,7 +66,7 @@ export default function UserAvatar({
       )}
       {showOnline && (
         <span
-          className={`absolute bottom-0 right-0 h-3 w-3 rounded-full border-2 border-[color:var(--panel)] ${
+          className={`absolute bottom-0 right-0 z-20 h-3 w-3 rounded-full border-2 border-[color:var(--panel)] ${
             online
               ? "bg-emerald-400"
               : offlineDot

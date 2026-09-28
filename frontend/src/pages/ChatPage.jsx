@@ -312,14 +312,17 @@ const toggleAI = (force) =>
           {isMobileSidebarOpen && (
             <div className="fixed inset-0 z-40 bg-black/50 backdrop-blur-sm md:hidden" onClick={() => setIsMobileSidebarOpen(false)} />
           )}
-          {/* Mobile hamburger */}
-          <button
-            onClick={() => setIsMobileSidebarOpen((v) => !v)}
-            className="absolute left-3 top-3 z-50 flex size-9 items-center justify-center rounded-full border border-white/10 bg-white/5 text-[color:var(--text-muted)] backdrop-blur-xl md:hidden"
-            aria-label="Toggle menu"
-          >
-            {isMobileSidebarOpen ? <XIcon className="size-4" /> : <MenuIcon className="size-4" />}
-          </button>
+          {/* Mobile hamburger — hidden when a chat is open; ChatHeader's
+            back arrow replaces it for closing the current conversation. */}
+          {!selectedUser && !selectedGroup && (
+            <button
+              onClick={() => setIsMobileSidebarOpen((v) => !v)}
+              className="absolute left-3 top-3 z-50 flex size-9 items-center justify-center rounded-full border border-white/10 bg-white/5 text-[color:var(--text-muted)] backdrop-blur-xl md:hidden"
+              aria-label="Toggle menu"
+            >
+              {isMobileSidebarOpen ? <XIcon className="size-4" /> : <MenuIcon className="size-4" />}
+            </button>
+          )}
            <div className="relative flex h-full min-h-0 min-w-0 flex-1 flex-col overflow-hidden bg-[color:var(--panel)]/80 backdrop-blur-xl">
              {selectedUser || selectedGroup ? (
                 <ChatContainer onToggleAI={toggleAI} isAIOpen={isAIOpen} insertTextRef={insertTextRef} detailsTrigger={detailsTrigger} detailsPanel={detailsPanel} onViewGroupInfo={openGroupInfo} />

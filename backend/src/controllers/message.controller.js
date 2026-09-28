@@ -774,6 +774,11 @@ export const deleteConversation = async (req, res) => {
     // Unpin the chat from my conversation list.
     await User.findByIdAndUpdate(myId, { $pull: { pinnedChats: otherId } });
 
+    // Notify the current user's own other tabs/devices so the conversation
+    // disappears from their chats list and the open chat pane closes.
+    const sockId = getReceiverSocketId(String(myId));
+    if (sockId) io.to(sockId).emit("conversation-deleted", { otherId: String(otherId) });
+
     res.status(200).json({ message: "Conversation deleted.", modifiedCount: result.modifiedCount });
   } catch (error) {
     console.error("Error in deleteConversation controller: ", error.message);

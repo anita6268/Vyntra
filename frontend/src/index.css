@@ -979,11 +979,25 @@ body {
 }
 
 /* ===== Mobile safe-area insets (notch, dynamic browser toolbar) ===== */
-.safe-top { padding-top: env(safe-area-inset-top); }
-.safe-bottom { padding-bottom: env(safe-area-inset-bottom); }
-.safe-left { padding-left: env(safe-area-inset-left); }
-.safe-right { padding-right: env(safe-area-inset-right); }
-.safe-x { padding-left: env(safe-area-inset-left); padding-right: env(safe-area-inset-right); }
+/* These use calc() to ADD the safe-area inset to a base padding. Without the
+   base padding, env() returns 0 on devices without a notch/home-indicator,
+   which would erase the Tailwind padding utilities that these classes
+   intentionally override in the cascade. */
+/* safe-top keeps 0.75rem base at ALL breakpoints to match ChatHeader's py-3 */
+.safe-top    { padding-top:    calc(env(safe-area-inset-top,    0px) + 0.75rem); }
+/* safe-bottom: 0.75rem on mobile (pb-3), 1rem at sm+ (sm:pb-4) */
+.safe-bottom { padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 0.75rem); }
+/* Horizontal safe areas — keep 0.75rem base at all breakpoints */
+.safe-left   { padding-left:   calc(env(safe-area-inset-left,   0px) + 0.75rem); }
+.safe-right  { padding-right:  calc(env(safe-area-inset-right,  0px) + 0.75rem); }
+.safe-x      { padding-left:   calc(env(safe-area-inset-left,   0px) + 0.75rem); padding-right: calc(env(safe-area-inset-right, 0px) + 0.75rem); }
+.safe-inset  { padding-top:    calc(env(safe-area-inset-top,    0px) + 0.75rem); padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 0.75rem); padding-left: calc(env(safe-area-inset-left, 0px) + 0.75rem); padding-right: calc(env(safe-area-inset-right, 0px) + 0.75rem); }
+
+/* Desktop (sm+): safe-bottom base padding increases to 1rem to match sm:pb-4 */
+@media (min-width: 640px) {
+  .safe-bottom { padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 1rem); }
+  .safe-inset  { padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 1rem); }
+}
 
 /* Compact mobile: tighter button padding, smaller icons, smaller composer buttons */
 @media (max-width: 639px) {

@@ -1133,6 +1133,7 @@ export const useChatStore = create((set, get) => ({
     socket.off("messagePinned");
     socket.off("messageStarred");
     socket.off("chatCleared");
+    socket.off("conversation-deleted");
     socket.off("userBlocked");
     socket.off("userUnblocked");
     socket.off("userMuted");
@@ -1451,6 +1452,24 @@ export const useChatStore = create((set, get) => ({
       get().getMyChatPartners();
     });
 
+    // When a conversation is deleted (from another tab/device or the backend),
+    // remove it from the chats list and clear the open chat pane if this
+    // conversation is currently open.
+    socket.on("conversation-deleted", ({ otherId }) => {
+      set((state) => {
+        const isSameUser =
+          state.selectedUser && String(state.selectedUser._id) === String(otherId);
+        const isSameGroup =
+          state.selectedGroup && String(state.selectedGroup._id) === String(otherId);
+        return {
+          chats: state.chats.filter((c) => String(c._id) !== String(otherId)),
+          messages: isSameUser || isSameGroup ? [] : state.messages,
+          selectedUser: isSameUser ? null : state.selectedUser,
+          selectedGroup: isSameGroup ? null : state.selectedGroup,
+        };
+      });
+    });
+
 // Realtime block state sync.
     // Canonical user.controller emits `{ userId, blocked }` where `userId` is the
     // OTHER user id and `blocked` is a boolean ("me" blocked them, or they blocked me).
@@ -1485,6 +1504,7 @@ export const useChatStore = create((set, get) => ({
       socket.off("messagePinned");
       socket.off("messageStarred");
       socket.off("chatCleared");
+      socket.off("conversation-deleted");
       socket.off("userBlocked");
       socket.off("userUnblocked");
       socket.off("userMuted");

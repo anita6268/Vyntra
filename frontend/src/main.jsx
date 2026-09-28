@@ -14,6 +14,14 @@ createRoot(document.getElementById("root")).render(
 
 if ("serviceWorker" in navigator && import.meta.env.MODE === "production") {
   window.addEventListener("load", () => {
-    navigator.serviceWorker.register("/sw.js").catch(() => {});
+    navigator.serviceWorker.register("/sw.js", { updateViaCache: "none" }).then((registration) => {
+      // If a newer SW is waiting, prompt the user to reload for the latest
+      // assets (CSS/JS fixes, etc.) instead of serving stale cached versions.
+      registration.onupdate = () => {
+        if (registration.waiting) {
+          registration.waiting.postMessage({ type: "SKIP_WAITING" });
+        }
+      };
+    }).catch(() => {});
   });
 }

@@ -90,6 +90,14 @@ self.addEventListener("fetch", (event) => {
   );
 });
 
+// Allow the new SW to take control immediately when the page asks.
+// main.jsx sends { type: "SKIP_WAITING" } from the update handler.
+self.addEventListener("message", (event) => {
+  if (event.data && event.data.type === "SKIP_WAITING") {
+    self.skipWaiting();
+  }
+});
+
 self.addEventListener("push", (event) => {
   if (!event.data) return;
   try {

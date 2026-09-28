@@ -457,7 +457,9 @@ function ChatContainer({ isAIOpen, onToggleAI, insertTextRef, detailsTrigger, de
   };
   const handleConfirmDeleteChat = async () => {
     setShowDeleteConfirm(false);
-    await deleteConversation(selectedUser._id);
+    const targetId = selectedUser?._id;
+    if (!targetId) return;
+    await deleteConversation(targetId);
   };
 
   const handleToggleDetails = () => setIsDetailsOpen((d) => !d);

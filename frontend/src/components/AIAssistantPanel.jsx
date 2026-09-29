@@ -441,7 +441,7 @@ function AIAssistantPanel({ isOpen, onClose, insertTextRef, defaultTool }) {
   const isPro = authUser?.isPro;
 
   const body = (
-    <div className="flex h-full min-h-0 w-full flex-col">
+    <div className="flex h-full min-h-0 w-full flex-col overflow-hidden">
       {/* Premium Header */}
       <div className="shrink-0 border-b border-white/10 p-4 pb-3">
         <div className="flex items-center justify-between">
@@ -472,7 +472,7 @@ function AIAssistantPanel({ isOpen, onClose, insertTextRef, defaultTool }) {
       </div>
 
       {/* Scrollable content */}
-      <div className="scrollbar-thin flex min-h-0 flex-1 flex-col gap-2.5 overflow-y-auto px-3 py-3">
+      <div className="scrollbar-thin flex min-h-0 flex-1 flex-col gap-2.5 overflow-y-auto overscroll-y-contain px-3 py-3 mobile-scroll">
         {!isPro && (
           <motion.div
             initial={{ opacity: 0, y: 8 }}
@@ -997,12 +997,12 @@ function AIAssistantPanel({ isOpen, onClose, insertTextRef, defaultTool }) {
               onDragEnd={(_, info) => {
                 if (info.offset.y > 120 || info.velocity.y > 500) onClose();
               }}
-              className="absolute inset-x-0 bottom-0 flex max-h-[85vh] flex-col overflow-hidden rounded-t-[28px] border border-white/10 bg-[color:var(--panel-strong)]/95 shadow-2xl backdrop-blur-2xl"
+              className="absolute inset-x-0 bottom-0 flex max-h-[85dvh] flex-col overflow-hidden rounded-t-[28px] border border-white/10 bg-[color:var(--panel-strong)]/95 shadow-2xl backdrop-blur-2xl safe-bottom"
             >
               <div className="flex shrink-0 items-center justify-center gap-2 px-4 pt-3">
                 <div className="h-1.5 w-12 rounded-full bg-white/20" />
               </div>
-              <div className="min-h-0 flex-1">{body}</div>
+              <div className="min-h-0 flex-1 overflow-y-auto overscroll-y-contain mobile-scroll">{body}</div>
             </motion.div>
           </motion.div>
         )}

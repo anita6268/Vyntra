@@ -999,6 +999,14 @@ body {
   .safe-inset  { padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 1rem); }
 }
 
+/* Mobile touch scrolling — iOS momentum scroll + overscroll containment for
+   AI panel, modals, and other scrollable sheets. Without -webkit-overflow-scrolling:
+   touch, iOS Safari won't scroll overflow containers at all. */
+.mobile-scroll {
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior-y: contain;
+}
+
 /* ===== Mobile safe-area-inset-bottom for chat layout ===== */
 /* mobile-safe-bottom: base padding + safe-area-inset-bottom for the message
    scroll list. Base is 1rem (16px) on mobile, 2rem (32px) at sm+ so desktop
@@ -1050,5 +1058,17 @@ body {
   .glow-send {
     width: 40px;
     height: 40px;
+  }
+}
+
+/* Tablet (640px-1023px): compact premium buttons to prevent overflow
+   when the browser is half-screen beside the IDE / sidebar */
+@media (min-width: 640px) and (max-width: 1023px) {
+  .premium-button {
+    padding: 0.4rem;
+  }
+  .premium-button svg {
+    width: 0.85rem;
+    height: 0.85rem;
   }
 }

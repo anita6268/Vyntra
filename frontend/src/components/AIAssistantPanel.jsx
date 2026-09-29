@@ -991,18 +991,23 @@ function AIAssistantPanel({ isOpen, onClose, insertTextRef, defaultTool }) {
               animate={{ y: 0 }}
               exit={{ y: "100%" }}
               transition={{ type: "spring", stiffness: 320, damping: 34 }}
-              drag="y"
-              dragConstraints={{ top: 0, bottom: 0 }}
-              dragElastic={{ top: 0, bottom: 0.6 }}
-              onDragEnd={(_, info) => {
-                if (info.offset.y > 120 || info.velocity.y > 500) onClose();
-              }}
               className="absolute inset-x-0 bottom-0 flex max-h-[85dvh] flex-col overflow-hidden rounded-t-[28px] border border-white/10 bg-[color:var(--panel-strong)]/95 shadow-2xl backdrop-blur-2xl safe-bottom"
             >
-              <div className="flex shrink-0 items-center justify-center gap-2 px-4 pt-3">
+              {/* Drag handle — drag and touch-action:pan-x confined to this
+                  small bar only, so sibling scrollable content (a sibling
+                  div, NOT a child of this handle) remains scrollable on iOS. */}
+              <motion.div
+                drag="y"
+                dragConstraints={{ top: 0, bottom: 500 }}
+                dragElastic={{ top: 0, bottom: 0.6 }}
+                onDragEnd={(_, info) => {
+                  if (info.offset.y > 120 || info.velocity.y > 500) onClose();
+                }}
+                className="flex shrink-0 cursor-grab items-center justify-center gap-2 px-4 pt-3 active:cursor-grabbing"
+              >
                 <div className="h-1.5 w-12 rounded-full bg-white/20" />
-              </div>
-              <div className="min-h-0 flex-1 overflow-y-auto overscroll-y-contain mobile-scroll">{body}</div>
+              </motion.div>
+              <div className="min-h-0 flex-1">{body}</div>
             </motion.div>
           </motion.div>
         )}

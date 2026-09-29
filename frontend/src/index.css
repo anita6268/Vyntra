@@ -1005,6 +1005,13 @@ body {
 .mobile-scroll {
   -webkit-overflow-scrolling: touch;
   overscroll-behavior-y: contain;
+  /* Explicitly allow vertical panning on scroll containers.
+     iOS Safari treats touch-action as a ceiling: even though touch-action
+     is not inherited, a parent with touch-action: pan-x (set by Framer
+     Motion drag="y") blocks vertical scrolling on descendants. Setting
+     touch-action: pan-y on the actual scroll container restores vertical
+     scrolling capability. */
+  touch-action: pan-y;
 }
 
 /* ===== Mobile safe-area-inset-bottom for chat layout ===== */

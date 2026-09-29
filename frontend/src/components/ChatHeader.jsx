@@ -174,11 +174,11 @@ function ChatHeader({
       ];
 
   return (
-    <div className="relative z-[100] flex shrink-0 items-center justify-between gap-3 overflow-visible border-b border-white/[0.08] bg-white/[0.08] px-3 safe-top py-3 backdrop-blur-xl sm:px-5">
+    <div className="relative z-[100] flex shrink-0 items-center justify-between gap-2 overflow-visible border-b border-white/[0.08] bg-white/[0.08] px-3 safe-top py-3 backdrop-blur-xl sm:px-5">
       {/* Animated border glow */}
       <div className="pointer-events-none absolute inset-x-0 bottom-0 h-px bg-gradient-to-r from-transparent via-[color:var(--accent-3)]/40 to-transparent" />
 
-      <div className="flex min-w-0 items-center gap-3">
+      <div className="flex min-w-0 items-center gap-2">
         <motion.button
           type="button"
           whileHover={{ scale: 1.04 }}
@@ -221,9 +221,9 @@ function ChatHeader({
           )}
         </motion.div>
 
-        <div className="min-w-0">
+        <div className="min-w-0 overflow-hidden">
           <h3 className="truncate text-[15px] font-semibold leading-tight text-[color:var(--text-primary)]">{chatName || "Chat"}</h3>
-          <p className="flex items-center gap-1.5 pt-0.5 text-xs text-[color:var(--text-muted)]">
+          <p className="flex min-w-0 items-center gap-1.5 pt-0.5 text-xs text-[color:var(--text-muted)]">
             {typingLabel ? (
               <span className="flex items-center gap-1 font-medium text-emerald-300">
                 <span className="typing-dot inline-block h-1.5 w-1.5 rounded-full bg-emerald-300 shadow-[0_0_6px_rgba(52,211,153,0.6)]" />
@@ -249,7 +249,7 @@ function ChatHeader({
       </div>
 
       <div className="flex shrink-0 items-center gap-1 sm:gap-1.5">
-        <motion.button whileHover={{ scale: 1.04 }} whileTap={{ scale: 0.96 }} onClick={onToggleDetails} className={`premium-button ${isDetailsOpen ? "btn-active bg-gradient-to-r from-[color:var(--accent)] to-[color:var(--accent-3)]" : ""}`} aria-label="Details panel" aria-expanded={isDetailsOpen} aria-controls="chat-details-panel">
+        <motion.button whileHover={{ scale: 1.04 }} whileTap={{ scale: 0.96 }} onClick={onToggleDetails} className={`premium-button inline-flex shrink-0 ${isDetailsOpen ? "btn-active bg-gradient-to-r from-[color:var(--accent)] to-[color:var(--accent-3)]" : ""}`} aria-label="Details panel" aria-expanded={isDetailsOpen} aria-controls="chat-details-panel">
           <PanelRightIcon className="size-3.5" />
         </motion.button>
         <CallBadge />
@@ -260,7 +260,7 @@ function ChatHeader({
           disabled={!callsAvailable}
           aria-disabled={!callsAvailable}
           aria-label={callsAvailable ? "Voice call" : `${chatName} is offline`}
-          className={`premium-button inline-flex ${callsAvailable ? "" : "disabled:cursor-not-allowed disabled:opacity-30"}`}
+          className={`premium-button inline-flex shrink-0 ${callsAvailable ? "" : "disabled:cursor-not-allowed disabled:opacity-30"}`}
         >
           <PhoneIcon className="size-3.5" />
         </motion.button>
@@ -271,7 +271,7 @@ function ChatHeader({
           disabled={!callsAvailable}
           aria-disabled={!callsAvailable}
           aria-label={callsAvailable ? "Video call" : `${chatName} is offline`}
-          className={`premium-button inline-flex ${callsAvailable ? "" : "disabled:cursor-not-allowed disabled:opacity-30"}`}
+          className={`premium-button inline-flex shrink-0 ${callsAvailable ? "" : "disabled:cursor-not-allowed disabled:opacity-30"}`}
         >
           <VideoIcon className="size-3.5" />
         </motion.button>
@@ -279,7 +279,7 @@ function ChatHeader({
           whileHover={{ scale: 1.04 }}
           whileTap={{ scale: 0.96 }}
           onClick={onToggleSearch}
-          className={`premium-button hidden md:inline-flex ${isSearchOpen ? "btn-active bg-gradient-to-r from-[color:var(--accent)] to-[color:var(--accent-3)]" : ""}`}
+          className={`premium-button hidden md:inline-flex shrink-0 ${isSearchOpen ? "btn-active bg-gradient-to-r from-[color:var(--accent)] to-[color:var(--accent-3)]" : ""}`}
           aria-label="Search in conversation"
           aria-expanded={isSearchOpen}
           aria-controls="chat-search-panel"
@@ -290,14 +290,14 @@ function ChatHeader({
           whileHover={{ scale: 1.04 }}
           whileTap={{ scale: 0.96 }}
           onClick={onToggleAI}
-          className={`premium-button inline-flex ${isAIOpen ? "btn-active bg-gradient-to-r from-[color:var(--accent)] to-[color:var(--accent-3)]" : ""}`}
+          className={`premium-button inline-flex shrink-0 ${isAIOpen ? "btn-active bg-gradient-to-r from-[color:var(--accent)] to-[color:var(--accent-3)]" : ""}`}
           aria-label="AI Assistant"
           aria-expanded={isAIOpen}
           aria-controls="ai-assistant-panel"
         >
           <SparklesIcon className="size-3.5" />
         </motion.button>
-        <motion.button whileHover={{ scale: 1.04 }} whileTap={{ scale: 0.96 }} className="premium-button hidden sm:inline-flex" onClick={() => { setSelectedUser(null); setSelectedGroup(null); }} aria-label="Close chat">
+        <motion.button whileHover={{ scale: 1.04 }} whileTap={{ scale: 0.96 }} className="premium-button hidden sm:inline-flex shrink-0" onClick={() => { setSelectedUser(null); setSelectedGroup(null); }} aria-label="Close chat">
           <XIcon className="size-3.5" />
         </motion.button>
 
@@ -307,7 +307,7 @@ function ChatHeader({
             ref={menuButtonRef}
             whileHover={{ scale: 1.04 }}
             whileTap={{ scale: 0.96 }}
-            className={`premium-button inline-flex ${menuOpen ? "btn-active bg-gradient-to-r from-[color:var(--accent)] to-[color:var(--accent-3)]" : ""}`}
+            className={`premium-button inline-flex shrink-0 ${menuOpen ? "btn-active bg-gradient-to-r from-[color:var(--accent)] to-[color:var(--accent-3)]" : ""}`}
             onClick={() => setMenuOpen((o) => !o)}
             aria-label="More options"
             aria-expanded={menuOpen}

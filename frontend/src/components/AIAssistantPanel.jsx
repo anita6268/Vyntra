@@ -991,7 +991,7 @@ function AIAssistantPanel({ isOpen, onClose, insertTextRef, defaultTool }) {
               animate={{ y: 0 }}
               exit={{ y: "100%" }}
               transition={{ type: "spring", stiffness: 320, damping: 34 }}
-              className="absolute inset-x-0 bottom-0 flex max-h-[85dvh] flex-col overflow-hidden rounded-t-[28px] border border-white/10 bg-[color:var(--panel-strong)]/95 shadow-2xl backdrop-blur-2xl safe-bottom"
+              className="absolute inset-x-0 bottom-0 flex h-[85dvh] flex-col overflow-hidden rounded-t-[28px] border border-white/10 bg-[color:var(--panel-strong)]/95 shadow-2xl backdrop-blur-2xl safe-bottom"
             >
               {/* Drag handle — drag and touch-action:pan-x confined to this
                   small bar only, so sibling scrollable content (a sibling
